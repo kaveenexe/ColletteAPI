@@ -1,0 +1,6 @@
+@ColletteAPI_HostAddress = http://localhost:5134
+
+GET {{ColletteAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
