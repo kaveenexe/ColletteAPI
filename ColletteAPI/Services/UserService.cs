@@ -17,6 +17,14 @@ namespace ColletteAPI.Services
             _authService = authService;
             _jwtService = jwtService;
         }
+        public async Task<List<User>> GetUsersByType(string userType)
+        {
+            return await _userRepository.GetUsersByType(userType); // Fetch users by type
+        }
+        public async Task<User> GetUserById(string id)
+        {
+            return await _userRepository.GetUserById(id);
+        }
 
         public async Task<AuthResponse> Authenticate(UserLoginDto loginDto)
         {
@@ -71,6 +79,35 @@ namespace ColletteAPI.Services
 
             await _userRepository.AddUser(user);
             return user;
+        }
+        public async Task UpdateUser(string id, UserUpdateDto updateDto)
+        {
+            var user = await _userRepository.GetUserById(id);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found");
+            }
+
+            user.FirstName = updateDto.FirstName ?? user.FirstName;
+            user.LastName = updateDto.LastName ?? user.LastName;
+            user.Username = updateDto.Username ?? user.Username;
+            user.Address = updateDto.Address ?? user.Address;
+            user.IsActive = updateDto.IsActive ?? user.IsActive;
+
+            await _userRepository.UpdateUser(id, user);
+        }
+
+        public async Task DeleteUser(string id)
+        {
+            var user = await _userRepository.GetUserById(id);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found");
+            }
+
+            await _userRepository.DeleteUser(id);
         }
     }
 }
