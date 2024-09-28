@@ -46,7 +46,10 @@ namespace ColletteAPI.Services
                 UserId = user.Id,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Role = user.UserType
+                Role = user.UserType,
+                Email = user.Email,
+                Address = user.Address,
+                NIC = user.NIC
             };
         }
 

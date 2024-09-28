@@ -9,6 +9,7 @@ namespace ColletteAPI.Repositories
         private readonly IMongoCollection<Product> _products;
 
         public ProductRepository(IMongoClient client, IConfiguration configuration)
+
         {
             var database = client.GetDatabase(configuration.GetSection("MongoDB:DatabaseName").Value);
             _products = database.GetCollection<Product>("Products");
@@ -20,6 +21,7 @@ namespace ColletteAPI.Repositories
         }
 
         public async Task<Product> GetByIdAsync(string id)
+
         {
             return await _products.Find(p => p.Id == id).FirstOrDefaultAsync();
         }

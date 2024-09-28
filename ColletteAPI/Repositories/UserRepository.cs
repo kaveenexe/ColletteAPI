@@ -10,9 +10,10 @@ namespace ColletteAPI.Repositories
     {
         private readonly IMongoCollection<User> _users;
 
-        public UserRepository(MongoDbContext context)
+        public UserRepository(IMongoClient client, IConfiguration configuration)
         {
-            _users = context.GetCollection<User>("Users");
+            var database = client.GetDatabase(configuration.GetSection("MongoDB:DatabaseName").Value);
+            _users = database.GetCollection<User>("Users");
         }
 
         public async Task<User> GetUserByUsername(string username)

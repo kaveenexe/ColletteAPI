@@ -1,5 +1,3 @@
-
-
 using MongoDB.Driver;
 using ColletteAPI.Data;
 using ColletteAPI.Helpers;
@@ -31,8 +29,9 @@ builder.Services.AddSingleton<JwtService>(); //Register JWT Service
 // Register ProductRepository
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
-// Register CartRepository
+
 builder.Services.AddScoped<ICartRepository, CartRepository>();
+
 
 // Add CORS services
 builder.Services.AddCors(options =>
