@@ -1,6 +1,5 @@
-﻿namespace ColletteAPI.Data;
+﻿using ColletteAPI.Data;
 using ColletteAPI.Models;
-using ColletteAPI.Models.Domain;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
@@ -13,8 +12,8 @@ public class MongoDbContext
         var client = new MongoClient(settings.Value.ConnectionString);
         _database = client.GetDatabase(settings.Value.DatabaseName);
     }
+  
+    public IMongoCollection<User> Users => _database.GetCollection<User>("Users");
 
     public IMongoCollection<Product> Products => _database.GetCollection<Product>("Products");
-
-    public IMongoCollection<User> Users => _database.GetCollection<User>("Users");
 }

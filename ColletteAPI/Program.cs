@@ -30,6 +30,8 @@ builder.Services.AddSingleton<JwtService>(); //Register JWT Service
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+
 
 // Add CORS services
 builder.Services.AddCors(options =>
