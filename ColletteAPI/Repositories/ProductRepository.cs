@@ -9,10 +9,12 @@ namespace ColletteAPI.Repositories
     {
         private readonly IMongoCollection<Product> _products;
 
-        public ProductRepository(MongoDbContext context)
+        public ProductRepository(IMongoClient client, IConfiguration configuration)
         {
-            _products = context.GetCollection<Product>("Products");
+            var database = client.GetDatabase(configuration.GetSection("MongoDB:DatabaseName").Value);
+            _products = database.GetCollection<Product>("Products");
         }
+
 
         public async Task<IEnumerable<Product>> GetAllProducts()
         {
