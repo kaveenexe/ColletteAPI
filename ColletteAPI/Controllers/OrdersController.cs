@@ -25,45 +25,16 @@ namespace ColletteAPI.Controllers
             return Ok(orders);
         }
 
-        // Creates a new order by admin.
-        [HttpPost("Admin")]
-        public async Task<IActionResult> CreateOrderByAdmin([FromBody] OrderCreateDto orderDto)
+        // Creates a new order.
+        [HttpPost]
+        public async Task<IActionResult> CreateOrder([FromBody] OrderCreateDto orderDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (orderDto.BillingDetails == null)
-            {
-                return BadRequest("Billing details are required.");
-            }
-
-            orderDto.CreatedByCustomer = false;
-            orderDto.CreatedByAdmin = true;
-
-            var result = await _orderService.CreateOrderByAdmin(orderDto);
-            return CreatedAtAction(nameof(GetOrderById), new { id = result.Id }, result);
-        }
-
-        // Creates a new order by customer.
-        [HttpPost("Customer")]
-        public async Task<IActionResult> CreateOrderByCustomer([FromBody] OrderCreateDto orderDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (orderDto.BillingDetails == null)
-            {
-                return BadRequest("Billing details are required.");
-            }
-
-            orderDto.CreatedByCustomer = true;
-            orderDto.CreatedByAdmin = false;
-
-            var result = await _orderService.CreateOrderByCustomer(orderDto);
+            var result = await _orderService.CreateOrder(orderDto);
             return CreatedAtAction(nameof(GetOrderById), new { id = result.Id }, result);
         }
 
