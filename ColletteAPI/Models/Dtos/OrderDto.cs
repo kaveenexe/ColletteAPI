@@ -98,8 +98,7 @@ namespace ColletteAPI.Models.Dtos
 
         public string Phone { get; set; }
 
-        public string SingleBillingAddress { get; set; }
-
+        [Required]
         public BillingAddressDto BillingAddress { get; set; }
     }
 

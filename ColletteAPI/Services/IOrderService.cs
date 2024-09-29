@@ -6,8 +6,7 @@ namespace ColletteAPI.Services
     {
         Task<IEnumerable<OrderDto>> GetAllOrders();
         Task<OrderDto> GetOrderById(string id);
-        Task<OrderDto> CreateOrderByCustomer(OrderCreateDto orderDto);
-        Task<OrderDto> CreateOrderByAdmin(OrderCreateDto orderDto);
+        Task<OrderDto> CreateOrder(OrderCreateDto orderDto);
         Task<bool> UpdateOrderStatus(string id, OrderUpdateDto orderDto);
         Task<bool> DeleteOrder(string id);
         Task<bool> CancelOrder(string id, string adminNote);
