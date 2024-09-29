@@ -6,7 +6,8 @@ namespace ColletteAPI.Repositories
     {
         Task<IEnumerable<Order>> GetAllOrders();
         Task<Order> GetOrderById(string id);
-        Task<Order> CreateOrder(Order order);
+        Task<Order> CreateOrderByCustomer(Order order);
+        Task<Order> CreateOrderByAdmin(Order order);
         Task<bool> UpdateOrderStatus(string id, OrderStatus status);
         Task<bool> CancelOrder(string id, string adminNote);
         Task<bool> MarkOrderAsDelivered(string id);

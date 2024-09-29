@@ -129,11 +129,12 @@ namespace ColletteAPI.Models.Domain
         public string Email { get; set; }
 
         [BsonElement("Phone")]
-        [Required(ErrorMessage = "Phone number is required.")]
         public string Phone { get; set; }
 
+        [BsonElement("SingleBillingAddress")]
+        public string SingleBillingAddress { get; set; }
+
         [BsonElement("BillingAddress")]
-        [Required(ErrorMessage = "Billing address is required.")]
         public BillingAddress BillingAddress { get; set; }
     }
 
