@@ -28,6 +28,7 @@ namespace ColletteAPI.Repositories
             var objectId = ObjectId.Parse(id);
             return await _users.Find(user => user.Id == objectId.ToString()).FirstOrDefaultAsync();
         }
+
         public async Task<List<User>> GetUsersByType(string userType)
         {
             return await _users.Find(user => user.UserType == userType).ToListAsync();

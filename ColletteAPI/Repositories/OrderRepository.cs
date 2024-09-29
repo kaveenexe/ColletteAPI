@@ -26,7 +26,13 @@ namespace ColletteAPI.Repositories
             return await _orders.Find(order => order.Id == id).FirstOrDefaultAsync();
         }
 
-        public async Task<Order> CreateOrder(Order order)
+        public async Task<Order> CreateOrderByCustomer(Order order)
+        {
+            await _orders.InsertOneAsync(order);
+            return order;
+        }
+
+        public async Task<Order> CreateOrderByAdmin(Order order)
         {
             await _orders.InsertOneAsync(order);
             return order;
