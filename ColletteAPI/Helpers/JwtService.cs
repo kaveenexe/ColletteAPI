@@ -24,16 +24,10 @@ namespace ColletteAPI.Helpers
 
         public string GenerateToken(string userId, string role)
         {
-            // Ensure that userId and role are not null
-            if (string.IsNullOrEmpty(userId))
-                throw new ArgumentNullException(nameof(userId), "User ID cannot be null or empty.");
-            if (string.IsNullOrEmpty(role))
-                throw new ArgumentNullException(nameof(role), "Role cannot be null or empty.");
-
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userId),
-                new Claim(ClaimTypes.Role, role),  // Ensure role is not null
+                new Claim(ClaimTypes.NameIdentifier, userId),
+                new Claim(ClaimTypes.Role, role),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 

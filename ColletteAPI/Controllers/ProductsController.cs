@@ -1,15 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using ColletteAPI.Models;
 using ColletteAPI.Repositories;
 using System.Text.Json;
+using System.Security.Claims;
 
 namespace ColletteAPI.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepository _productRepository;
@@ -21,9 +24,20 @@ namespace ColletteAPI.Controllers
             _logger = logger;
         }
 
-        [HttpPost]
-        public async Task<ActionResult<Product>> CreateProduct([FromBody] Product product)
+        private bool ValidateVendorId(string routeVendorId)
         {
+            var claimVendorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return claimVendorId == routeVendorId;
+        }
+
+        [HttpPost("api/vendors/{vendorId}/products")]
+        public async Task<ActionResult<Product>> CreateProduct(string vendorId, [FromBody] Product product)
+        {
+            if (!ValidateVendorId(vendorId))
+            {
+                return Forbid("You are not authorized to perform this action.");
+            }
+
             _logger.LogInformation($"Received product data: {JsonSerializer.Serialize(product)}");
 
             if (!ModelState.IsValid)
@@ -32,10 +46,12 @@ namespace ColletteAPI.Controllers
                 return BadRequest(ModelState);
             }
 
+            product.VendorId = vendorId;
+
             if (await _productRepository.IsUniqueProductIdUnique(product.UniqueProductId))
             {
                 await _productRepository.CreateAsync(product);
-                return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+                return CreatedAtAction(nameof(GetProduct), new { vendorId, id = product.Id }, product);
             }
             else
             {
@@ -43,18 +59,27 @@ namespace ColletteAPI.Controllers
             }
         }
 
-
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        [HttpGet("api/vendors/{vendorId}/products")]
+        public async Task<ActionResult<IEnumerable<Product>>> GetProducts(string vendorId)
         {
-            var products = await _productRepository.GetAllAsync();
+            if (!ValidateVendorId(vendorId))
+            {
+                return Forbid("You are not authorized to perform this action.");
+            }
+
+            var products = await _productRepository.GetAllByVendorIdAsync(vendorId);
             return Ok(products);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(string id)
+        [HttpGet("api/vendors/{vendorId}/products/{id}")]
+        public async Task<ActionResult<Product>> GetProduct(string vendorId, string id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
+            if (!ValidateVendorId(vendorId))
+            {
+                return Forbid("You are not authorized to perform this action.");
+            }
+
+            var product = await _productRepository.GetByIdAndVendorIdAsync(id, vendorId);
 
             if (product == null)
             {
@@ -64,26 +89,44 @@ namespace ColletteAPI.Controllers
             return product;
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProduct(string id, Product product)
+        [HttpPut("api/vendors/{vendorId}/products/{id}")]
+        public async Task<IActionResult> UpdateProduct(string vendorId, string id, Product product)
         {
-            var existingProduct = await _productRepository.GetByIdAsync(id);
+            if (!ValidateVendorId(vendorId))
+            {
+                return Forbid("You are not authorized to perform this action.");
+            }
+
+            if (id != product.Id)
+            {
+                return BadRequest("ID in the route does not match the ID in the product object.");
+            }
+
+            var existingProduct = await _productRepository.GetByIdAndVendorIdAsync(id, vendorId);
             if (existingProduct == null)
             {
                 return NotFound();
             }
+
+            product.VendorId = vendorId;
             await _productRepository.UpdateAsync(id, product);
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(string id)
+        [HttpDelete("api/vendors/{vendorId}/products/{id}")]
+        public async Task<IActionResult> DeleteProduct(string vendorId, string id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
+            if (!ValidateVendorId(vendorId))
+            {
+                return Forbid("You are not authorized to perform this action.");
+            }
+
+            var product = await _productRepository.GetByIdAndVendorIdAsync(id, vendorId);
             if (product == null)
             {
                 return NotFound();
             }
+
             await _productRepository.DeleteAsync(id);
             return NoContent();
         }

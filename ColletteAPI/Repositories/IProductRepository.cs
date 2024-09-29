@@ -6,8 +6,8 @@ namespace ColletteAPI.Repositories
 {
     public interface IProductRepository
     {
-        Task<List<Product>> GetAllAsync();
-        Task<Product> GetByIdAsync(string id);
+        Task<List<Product>> GetAllByVendorIdAsync(string vendorId);
+        Task<Product> GetByIdAndVendorIdAsync(string id, string vendorId);
         Task<bool> IsUniqueProductIdUnique(string uniqueProductId);
         Task CreateAsync(Product product);
         Task UpdateAsync(string id, Product product);

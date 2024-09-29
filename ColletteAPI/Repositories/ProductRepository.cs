@@ -14,9 +14,9 @@ namespace ColletteAPI.Repositories
             _products = database.GetCollection<Product>("Products");
         }
 
-        public async Task<List<Product>> GetAllAsync()
+        public async Task<List<Product>> GetAllByVendorIdAsync(string vendorId)
         {
-            return await _products.Find(_ => true).ToListAsync();
+            return await _products.Find(p => p.VendorId == vendorId).ToListAsync();
         }
 
         public async Task<Product> GetByIdAsync(string id)
@@ -36,7 +36,7 @@ namespace ColletteAPI.Repositories
 
         public async Task UpdateAsync(string id, Product product)
         {
-            await _products.ReplaceOneAsync(p => p.Id == id, product);
+            await _products.ReplaceOneAsync(p => p.Id == id && p.VendorId == product.VendorId, product);
         }
 
         public async Task DeleteAsync(string id)
