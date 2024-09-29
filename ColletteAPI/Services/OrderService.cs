@@ -13,11 +13,13 @@ namespace ColletteAPI.Services
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IProductRepository _productRepository;
-        
-        public OrderService(IOrderRepository orderRepository, IProductRepository productRepository)
+        private readonly IUserRepository _userRepository;
+
+        public OrderService(IOrderRepository orderRepository, IProductRepository productRepository, IUserRepository userRepository)
         {
             _orderRepository = orderRepository;
             _productRepository = productRepository;
+            _userRepository = userRepository;
         }
 
         public async Task<IEnumerable<OrderDto>> GetAllOrders()
@@ -75,22 +77,98 @@ namespace ColletteAPI.Services
             };
         }
 
-        public async Task<OrderDto> CreateOrder(OrderCreateDto orderDto)
+        public async Task<OrderDto> CreateOrderByCustomer(OrderCreateDto orderDto)
         {
-            if (orderDto.CreatedByAdmin == true)
+            var customer = await _userRepository.GetUserById(orderDto.CustomerId);
+            if (customer == null)
             {
-                orderDto.CreatedByCustomer = false;
-            }
-            else
-            {
-                orderDto.CreatedByAdmin = false;
+                throw new ValidationException($"Customer with ID {orderDto.CustomerId} not found.");
             }
 
-            if (orderDto.CreatedByCustomer == true && string.IsNullOrWhiteSpace(orderDto.CustomerId))
+            string orderId = await GenerateUniqueOrderId();
+
+            var orderItems = new List<OrderItem>();
+
+            foreach (var orderItemGroup in orderDto.OrderItemsGroups)
             {
-                throw new ValidationException("Customer ID must be provided when the order is created by a customer.");
+                foreach (var item in orderItemGroup.Items)
+                {
+                    var product = await _productRepository.GetProductById(item.ProductId);
+                    if (product == null)
+                    {
+                        throw new ValidationException($"Product with ID {item.ProductId} not found.");
+                    }
+
+                    orderItems.Add(new OrderItem
+                    {
+                        ListItemId = orderItemGroup.ListItemId,
+                        OrderId = orderId,
+                        ProductId = item.ProductId,
+                        ProductName = product.Name,
+                        Quantity = item.Quantity,
+                        Price = product.Price
+                    });
+                }
             }
 
+            var customerFullName = $"{customer.FirstName} {customer.LastName}";
+
+            BillingDetails billingDetails = null;
+            if (orderDto.BillingDetails != null && !string.IsNullOrEmpty(orderDto.BillingDetails.SingleBillingAddress))
+            {
+                billingDetails = new BillingDetails
+                {
+                    CustomerName = customerFullName,
+                    Email = customer.Email,
+                    SingleBillingAddress = customer.Address
+                };
+            }
+
+            var order = new Order
+            {
+                OrderId = orderId,
+                OrderDate = DateTime.Now,
+                PaymentMethod = orderDto.PaymentMethod,
+                Status = OrderStatus.Purchased,
+                OrderItems = orderItems,
+                CustomerId = orderDto.CustomerId,
+                CreatedByCustomer = true,
+                BillingDetails = billingDetails
+            };
+
+            var createdOrder = await _orderRepository.CreateOrderByCustomer(order);
+
+            return new OrderDto
+            {
+                Id = createdOrder.Id,
+                OrderId = createdOrder.OrderId,
+                Status = createdOrder.Status,
+                OrderDate = createdOrder.OrderDate,
+                PaymentMethod = createdOrder.PaymentMethod,
+                OrderItemsGroups = createdOrder.OrderItems.GroupBy(oi => oi.ListItemId)
+                    .Select(group => new OrderItemGroupDto
+                    {
+                        ListItemId = group.Key,
+                        Items = group.Select(oi => new OrderItemDto
+                        {
+                            ProductId = oi.ProductId,
+                            ProductName = oi.ProductName,
+                            Quantity = oi.Quantity,
+                            Price = oi.Price
+                        }).ToList()
+                    }).ToList(),
+                CustomerId = createdOrder.CustomerId,
+                BillingDetails = createdOrder.BillingDetails != null ? new BillingDetailsDto
+                {
+                    CustomerName = createdOrder.BillingDetails.CustomerName,
+                    Email = createdOrder.BillingDetails.Email,
+                    SingleBillingAddress = createdOrder.BillingDetails.SingleBillingAddress
+                } : null
+            };
+        }
+
+        public async Task<OrderDto> CreateOrderByAdmin(OrderCreateDto orderDto)
+        {
             BillingDetails? billingDetails = null;
             if (orderDto.CreatedByAdmin == true && orderDto.BillingDetails != null)
             {
@@ -129,9 +207,9 @@ namespace ColletteAPI.Services
                         ListItemId = orderItemGroup.ListItemId,
                         OrderId = orderId,
                         ProductId = item.ProductId,
-                        ProductName = product.Name, 
+                        ProductName = product.Name,
                         Quantity = item.Quantity,
-                        Price = product.Price 
+                        Price = product.Price
                     });
                 }
             }
@@ -149,7 +227,7 @@ namespace ColletteAPI.Services
                 BillingDetails = billingDetails
             };
 
-            var createdOrder = await _orderRepository.CreateOrder(order);
+            var createdOrder = await _orderRepository.CreateOrderByAdmin(order);
 
             return new OrderDto
             {
@@ -165,9 +243,9 @@ namespace ColletteAPI.Services
                         Items = group.Select(oi => new OrderItemDto
                         {
                             ProductId = oi.ProductId,
-                            ProductName = oi.ProductName, 
+                            ProductName = oi.ProductName,
                             Quantity = oi.Quantity,
-                            Price = oi.Price 
+                            Price = oi.Price
                         }).ToList()
                     }).ToList(),
                 CustomerId = createdOrder.CreatedByCustomer == true ? createdOrder.CustomerId : null,
