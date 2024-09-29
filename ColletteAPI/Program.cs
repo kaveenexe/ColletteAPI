@@ -25,6 +25,11 @@ builder.Services.AddScoped<IUserRepository, UserRepository>(); //Register User R
 builder.Services.AddSingleton<AuthService>(); //Register Auth Service
 builder.Services.AddSingleton<JwtService>(); //Register JWT Service
 
+// Register IOrderService
+builder.Services.AddScoped<IOrderService, OrderService>();
+
+// Register IOrderRepository
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 // Register ProductRepository
 builder.Services.AddScoped<IProductRepository, ProductRepository>();

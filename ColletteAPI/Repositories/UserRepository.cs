@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using ColletteAPI.Models.Domain;
 using MongoDB.Driver;
 using MongoDB.Bson;
+using Microsoft.Extensions.Configuration;
 
 namespace ColletteAPI.Repositories
 {
