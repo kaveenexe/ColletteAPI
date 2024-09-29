@@ -12,5 +12,6 @@ namespace ColletteAPI.Repositories
         Task CreateAsync(Product product);
         Task UpdateAsync(string id, Product product);
         Task DeleteAsync(string id);
+        Task<Product> GetProductById(string productId);
     }
 }

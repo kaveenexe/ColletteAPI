@@ -12,10 +12,12 @@ namespace ColletteAPI.Services
     public class OrderService : IOrderService
     {
         private readonly IOrderRepository _orderRepository;
-
-        public OrderService(IOrderRepository orderRepository)
+        private readonly IProductRepository _productRepository;
+        
+        public OrderService(IOrderRepository orderRepository, IProductRepository productRepository)
         {
             _orderRepository = orderRepository;
+            _productRepository = productRepository;
         }
 
         public async Task<IEnumerable<OrderDto>> GetAllOrders()
@@ -57,8 +59,8 @@ namespace ColletteAPI.Services
                 OrderId = order.OrderId,
                 Status = order.Status,
                 OrderDate = order.OrderDate,
-                PaymentMethod = order.PaymentMethod, 
-                OrderItemsGroups = order.OrderItems.GroupBy(oi => oi.ListItemId) 
+                PaymentMethod = order.PaymentMethod,
+                OrderItemsGroups = order.OrderItems.GroupBy(oi => oi.ListItemId)
                     .Select(group => new OrderItemGroupDto
                     {
                         ListItemId = group.Key,
@@ -110,16 +112,29 @@ namespace ColletteAPI.Services
 
             string orderId = await GenerateUniqueOrderId();
 
-            var orderItems = orderDto.OrderItemsGroups.SelectMany(og =>
-                og.Items.Select(oi => new OrderItem
+            var orderItems = new List<OrderItem>();
+
+            foreach (var orderItemGroup in orderDto.OrderItemsGroups)
+            {
+                foreach (var item in orderItemGroup.Items)
                 {
-                    ListItemId = og.ListItemId,
-                    OrderId = orderId,
-                    ProductId = oi.ProductId,
-                    ProductName = oi.ProductName,
-                    Quantity = oi.Quantity,
-                    Price = oi.Price
-                })).ToList();
+                    var product = await _productRepository.GetProductById(item.ProductId);
+                    if (product == null)
+                    {
+                        throw new ValidationException($"Product with ID {item.ProductId} not found.");
+                    }
+
+                    orderItems.Add(new OrderItem
+                    {
+                        ListItemId = orderItemGroup.ListItemId,
+                        OrderId = orderId,
+                        ProductId = item.ProductId,
+                        ProductName = product.Name, 
+                        Quantity = item.Quantity,
+                        Price = product.Price 
+                    });
+                }
+            }
 
             var order = new Order
             {
@@ -150,9 +165,9 @@ namespace ColletteAPI.Services
                         Items = group.Select(oi => new OrderItemDto
                         {
                             ProductId = oi.ProductId,
-                            ProductName = oi.ProductName,
+                            ProductName = oi.ProductName, 
                             Quantity = oi.Quantity,
-                            Price = oi.Price
+                            Price = oi.Price 
                         }).ToList()
                     }).ToList(),
                 CustomerId = createdOrder.CreatedByCustomer == true ? createdOrder.CustomerId : null,

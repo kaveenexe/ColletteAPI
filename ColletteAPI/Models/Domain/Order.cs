@@ -17,7 +17,7 @@ namespace ColletteAPI.Models.Domain
     public enum PaymentMethods
     {
         Visa,
-        Master,
+        MasterCard,
         COD,
     }
 
