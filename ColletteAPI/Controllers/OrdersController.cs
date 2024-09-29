@@ -67,6 +67,7 @@ namespace ColletteAPI.Controllers
             return CreatedAtAction(nameof(GetOrderById), new { id = result.Id }, result);
         }
 
+
         // Retrieves an order by its ID.
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrderById(string id)
