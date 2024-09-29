@@ -182,7 +182,7 @@ namespace ColletteAPI.Services
 
             do
             {
-                int randomNumber = random.Next(100000, 999999);
+                int randomNumber = random.Next(1000, 9999);
                 orderId = $"#ORD{randomNumber}";
 
                 isUnique = !(await _orderRepository.OrderExists(orderId));
