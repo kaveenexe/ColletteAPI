@@ -45,5 +45,10 @@ namespace ColletteAPI.Repositories
         {
             await _products.DeleteOneAsync(p => p.Id == id);
         }
+
+        public async Task<Product> GetProductById(string productId)
+        {
+            return await _products.Find(p => p.UniqueProductId == productId).FirstOrDefaultAsync();
+        }
     }
 }
