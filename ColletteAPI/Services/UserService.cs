@@ -74,6 +74,7 @@ namespace ColletteAPI.Services
                 PasswordHash = _authService.HashPassword(registerDto.Password),
                 UserType = registerDto.UserType,
                 Address = registerDto.Address,
+                ContactNumber = registerDto.ContactNumber,
                 IsActive = registerDto.UserType == UserRoles.Customer ? false : true // // Set IsActive to false if the user is a Customer
             };
 
@@ -109,5 +110,10 @@ namespace ColletteAPI.Services
 
             await _userRepository.DeleteUser(id);
         }
+        public async Task<List<User>> GetPendingCustomers()
+        {
+            return await _userRepository.GetPendingCustomers();
+        }
+
     }
 }

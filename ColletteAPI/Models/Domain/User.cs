@@ -32,7 +32,8 @@ namespace ColletteAPI.Models.Domain
 
         [BsonElement("IsActive")]
         public bool IsActive { get; set; }
-
+        [BsonElement("ContactNumber")]
+        public string ContactNumber { get; set; }
         [BsonElement("Address")]
         public string Address { get; set; }
     }
