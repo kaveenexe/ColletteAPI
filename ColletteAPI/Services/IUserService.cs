@@ -11,5 +11,6 @@ namespace ColletteAPI.Services
         Task<User> Register(UserRegisterDto registerDto);
         Task UpdateUser(string id, UserUpdateDto updateDto); // Add update method signature
         Task DeleteUser(string id);
+        Task<List<User>> GetPendingCustomers();
     }
 }
