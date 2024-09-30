@@ -37,6 +37,12 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 
+// Register ICategoryService
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+// Register ICategoryRepository
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+
 
 // Add CORS services
 builder.Services.AddCors(options =>
