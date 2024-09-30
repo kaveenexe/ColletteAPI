@@ -22,7 +22,7 @@ namespace ColletteAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Product>> CreateProduct([FromBody] Product product)
+        public async Task<ActionResult<Product>> CreateProduct([FromBody] Product product, [FromQuery] string vendorId)
         {
             _logger.LogInformation($"Received product data: {JsonSerializer.Serialize(product)}");
 
@@ -31,6 +31,8 @@ namespace ColletteAPI.Controllers
                 _logger.LogWarning($"Invalid ModelState: {JsonSerializer.Serialize(ModelState)}");
                 return BadRequest(ModelState);
             }
+
+            product.VendorId = vendorId;
 
             if (await _productRepository.IsUniqueProductIdUnique(product.UniqueProductId))
             {
@@ -43,20 +45,19 @@ namespace ColletteAPI.Controllers
             }
         }
 
-
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<Product>>> GetProducts([FromQuery] string vendorId)
         {
-            var products = await _productRepository.GetAllAsync();
+            var products = await _productRepository.GetAllForVendorAsync(vendorId);
             return Ok(products);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(string id)
+        public async Task<ActionResult<Product>> GetProduct(string id, [FromQuery] string vendorId)
         {
             var product = await _productRepository.GetByIdAsync(id);
 
-            if (product == null)
+            if (product == null || product.VendorId != vendorId)
             {
                 return NotFound();
             }
@@ -65,22 +66,23 @@ namespace ColletteAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProduct(string id, Product product)
+        public async Task<IActionResult> UpdateProduct(string id, Product product, [FromQuery] string vendorId)
         {
             var existingProduct = await _productRepository.GetByIdAsync(id);
-            if (existingProduct == null)
+            if (existingProduct == null || existingProduct.VendorId != vendorId)
             {
                 return NotFound();
             }
+            product.VendorId = vendorId;
             await _productRepository.UpdateAsync(id, product);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(string id)
+        public async Task<IActionResult> DeleteProduct(string id, [FromQuery] string vendorId)
         {
             var product = await _productRepository.GetByIdAsync(id);
-            if (product == null)
+            if (product == null || product.VendorId != vendorId)
             {
                 return NotFound();
             }
