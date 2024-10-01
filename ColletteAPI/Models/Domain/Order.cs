@@ -11,14 +11,32 @@ namespace ColletteAPI.Models.Domain
         Accepted,
         Processing,
         Delivered,
+        PartiallyDelivered,
         Cancelled,
+        Pending
     }
 
+    // Define a specific enumeration for product statuses
+    public enum ProductStatus
+    {
+        Purchased,
+        Ready,
+        Delivered
+    }
+
+    // Define a specific enumeration for payment methods
     public enum PaymentMethods
     {
         Visa,
-        MasterCard,
-        COD,
+        Master,
+        COD
+    }
+
+    // Define a specific enumeration for order cancellation requests
+    public enum CancelRequestStatus
+    {
+        Pending,
+        Accepted
     }
 
     // Order details
@@ -26,7 +44,7 @@ namespace ColletteAPI.Models.Domain
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+        public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
 
         [BsonElement("OrderId")]
         [Required(ErrorMessage = "Order ID is required.")]
@@ -38,7 +56,7 @@ namespace ColletteAPI.Models.Domain
 
         [BsonElement("PaymentMethod")]
         [BsonRepresentation(BsonType.String)]
-        public PaymentMethods PaymentMethod { get; set; }
+        public PaymentMethods? PaymentMethod { get; set; }
 
         [BsonElement("Status")]
         [BsonRepresentation(BsonType.String)]
@@ -63,6 +81,9 @@ namespace ColletteAPI.Models.Domain
 
         [BsonElement("OrderCancellation")]
         public OrderCancellation? OrderCancellation { get; set; }
+
+        [BsonElement("TotalAmount")]
+        public decimal TotalAmount { get; set; }
 
         // Method to validate the order
         public void Validate()
@@ -92,6 +113,10 @@ namespace ColletteAPI.Models.Domain
     // Details in an order item
     public class OrderItem
     {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
+
         [BsonElement("ListItemId")]
         public int ListItemId { get; set; }
 
@@ -105,6 +130,9 @@ namespace ColletteAPI.Models.Domain
         [Required(ErrorMessage = "Product name is required.")]
         public string ProductName { get; set; }
 
+        [BsonElement("VendorId")]
+        public string VendorId { get; set; }
+
         [BsonElement("Quantity")]
         [Required(ErrorMessage = "Quantity is required.")]
         [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1.")]
@@ -114,6 +142,11 @@ namespace ColletteAPI.Models.Domain
         [Required(ErrorMessage = "Price is required.")]
         [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than zero.")]
         public decimal Price { get; set; }
+
+        [BsonElement("ProductStatus")]
+        [BsonRepresentation(BsonType.String)]
+        [Required(ErrorMessage = "Product status is required.")]
+        public ProductStatus ProductStatus { get; set; }
     }
 
     // Billing details for manual orders created by admin
@@ -174,10 +207,10 @@ namespace ColletteAPI.Models.Domain
         [BsonElement("CancellationApproved")]
         public bool CancellationApproved { get; set; }
 
-        [BsonElement("AdminNote")]
-        public string AdminNote { get; set; }
-
         [BsonElement("CancellationDate")]
         public DateTime? CancellationDate { get; set; }
+
+        [BsonElement("CancelRequestStatus")]
+        public CancelRequestStatus CancelRequestStatus { get; set; }
     }
 }

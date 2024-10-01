@@ -20,13 +20,18 @@ namespace ColletteAPI.Models.Dtos
         [Required]
         public DateTime OrderDate { get; set; }
 
-        [Required]
-        public PaymentMethods PaymentMethod { get; set; }
+        public PaymentMethods? PaymentMethod { get; set; }
 
         [Required]
         public List<OrderItemGroupDto> OrderItemsGroups { get; set; }
 
+        public decimal TotalAmount { get; set; }
+
         public string? CustomerId { get; set; }
+
+        public bool CreatedByCustomer { get; set; }
+
+        public bool CreatedByAdmin { get; set; }
 
         public BillingDetailsDto? BillingDetails { get; set; }
 
@@ -44,9 +49,9 @@ namespace ColletteAPI.Models.Dtos
 
         public string? CustomerId { get; set; }
 
-        public bool? CreatedByCustomer { get; set; } = false;
+        public bool CreatedByCustomer { get; set; }
 
-        public bool? CreatedByAdmin { get; set; } = false;
+        public bool CreatedByAdmin { get; set; }
 
         public BillingDetailsDto? BillingDetails { get; set; }
     }
@@ -78,12 +83,18 @@ namespace ColletteAPI.Models.Dtos
         public string ProductName { get; set; }
 
         [Required]
+        public string VendorId { get; set; }
+
+        [Required]
         [Range(1, 50)]
         public int Quantity { get; set; }
 
         [Required]
         [Range(0.01, double.MaxValue)]
         public decimal Price { get; set; }
+
+        [Required]
+        public ProductStatus ProductStatus { get; set; }
     }
 
     // Data Transfer Object for Billing Details
@@ -130,8 +141,8 @@ namespace ColletteAPI.Models.Dtos
 
         public bool CancellationApproved { get; set; }
 
-        public string AdminNote { get; set; }
-
         public DateTime? CancellationDate { get; set; }
+
+        public CancelRequestStatus CancelRequestStatus { get; set; }
     }
 }
