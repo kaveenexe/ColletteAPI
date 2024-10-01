@@ -237,5 +237,19 @@ namespace ColletteAPI.Controllers
 
             return Ok(new { message = "Order marked as delivered successfully." });
         }
+
+        // Get order items by vendorId (Vendor-Specific)
+        [HttpGet("vendor/{orderId}/{vendorId}")]
+        public async Task<IActionResult> GetOrderByVendorId(string orderId, string vendorId)
+        {
+            var orderDto = await _orderService.GetOrderByVendorId(orderId, vendorId);
+
+            if (orderDto == null)
+            {
+                return NotFound(new { message = "Order not found or no items for the specified vendor." });
+            }
+
+            return Ok(orderDto);
+        }
     }
 }

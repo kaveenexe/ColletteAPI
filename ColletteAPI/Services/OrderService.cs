@@ -609,11 +609,19 @@ namespace ColletteAPI.Services
                 return false;
             }
 
-            var vendorProducts = order.OrderItems.Where(item => item.VendorId == vendorId);
+            var vendorProducts = order.OrderItems.Where(item => item.VendorId == vendorId).ToList();
+
+            if (!vendorProducts.Any())
+            {
+                return false;
+            }
+
             foreach (var product in vendorProducts)
             {
                 product.ProductStatus = ProductStatus.Delivered;
             }
+
+            await _orderRepository.UpdateOrder(order);
 
             if (order.OrderItems.All(item => item.ProductStatus == ProductStatus.Delivered))
             {
@@ -625,6 +633,7 @@ namespace ColletteAPI.Services
             }
 
             await _orderRepository.UpdateOrder(order);
+
             return true;
         }
 
@@ -646,6 +655,62 @@ namespace ColletteAPI.Services
 
             await _orderRepository.UpdateOrder(order);
             return true;
+        }
+
+        // Get order items by vendorId (Vendor-Specific)
+        public async Task<OrderDto> GetOrderByVendorId(string orderId, string vendorId)
+        {
+            var order = await _orderRepository.GetOrderByVendorId(orderId, vendorId);
+            if (order == null)
+            {
+                return null;
+            }
+
+            return new OrderDto
+            {
+                Id = order.Id,
+                OrderId = order.OrderId,
+                Status = order.Status,
+                OrderDate = order.OrderDate,
+                PaymentMethod = order.PaymentMethod ?? PaymentMethods.Visa,
+                BillingDetails = order.BillingDetails != null
+                    ? new BillingDetailsDto
+                    {
+                        CustomerName = order.BillingDetails.CustomerName,
+                        Email = order.BillingDetails.Email,
+                        Phone = order.BillingDetails.Phone,
+                        SingleBillingAddress = order.BillingDetails.SingleBillingAddress,
+                        BillingAddress = order.BillingDetails.BillingAddress != null
+                            ? new BillingAddressDto
+                            {
+                                StreetAddress = order.BillingDetails.BillingAddress.StreetAddress,
+                                City = order.BillingDetails.BillingAddress.City,
+                                Province = order.BillingDetails.BillingAddress.Province,
+                                PostalCode = order.BillingDetails.BillingAddress.PostalCode,
+                                Country = order.BillingDetails.BillingAddress.Country
+                            }
+                            : null
+                    }
+                    : null,
+                TotalAmount = order.TotalAmount,
+                CreatedByCustomer = order.CreatedByCustomer,
+                CreatedByAdmin = order.CreatedByAdmin,
+                OrderItemsGroups = order.OrderItems
+                    .GroupBy(oi => oi.ListItemId)
+                    .Select(group => new OrderItemGroupDto
+                    {
+                        ListItemId = group.Key,
+                        Items = group.Select(oi => new OrderItemDto
+                        {
+                            ProductId = oi.ProductId,
+                            ProductName = oi.ProductName,
+                            VendorId = oi.VendorId,
+                            Quantity = oi.Quantity,
+                            Price = oi.Price,
+                            ProductStatus = oi.ProductStatus,
+                        }).ToList()
+                    }).ToList()
+            };
         }
     }
 }
