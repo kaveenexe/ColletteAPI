@@ -288,7 +288,7 @@ namespace ColletteAPI.Services
                 {
                     CustomerName = customerFullName,
                     Email = customer.Email,
-                    //Phone = customer.ContactNumber,
+                    Phone = customer.ContactNumber,
                     SingleBillingAddress = customer.Address
                 };
             }
