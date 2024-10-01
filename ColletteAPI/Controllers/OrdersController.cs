@@ -17,14 +17,6 @@ namespace ColletteAPI.Controllers
             _orderService = orderService;
         }
 
-        // Retrieves all orders.
-        [HttpGet]
-        public async Task<IActionResult> GetOrders()
-        {
-            var orders = await _orderService.GetAllOrders();
-            return Ok(orders);
-        }
-
         // Creates a new order by admin.
         [HttpPost("Admin")]
         public async Task<IActionResult> CreateOrderByAdmin([FromBody] OrderCreateDto orderDto)
@@ -67,12 +59,45 @@ namespace ColletteAPI.Controllers
             return CreatedAtAction(nameof(GetOrderById), new { id = result.Id }, result);
         }
 
+        // Retrieves all orders.
+        [HttpGet]
+        public async Task<IActionResult> GetOrders()
+        {
+            var orders = await _orderService.GetAllOrders();
+            return Ok(orders);
+        }
 
         // Retrieves an order by its ID.
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrderById(string id)
         {
             var order = await _orderService.GetOrderById(id);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(order);
+        }
+
+        // Retrieves orders by customer ID.
+        [HttpGet("customer/{customerId}")]
+        public async Task<IActionResult> GetOrdersByCustomerId(string customerId)
+        {
+            var orders = await _orderService.GetOrdersByCustomerId(customerId);
+            if (orders == null || !orders.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(orders);
+        }
+
+        // Retrieves an order by customer ID and order ID.
+        [HttpGet("customer/{customerId}/order/{orderId}")]
+        public async Task<IActionResult> GetOrderByCustomerIdAndOrderId(string customerId, string orderId)
+        {
+            var order = await _orderService.GetOrderByCustomerIdAndOrderId(customerId, orderId);
             if (order == null)
             {
                 return NotFound();
@@ -110,35 +135,47 @@ namespace ColletteAPI.Controllers
             return NoContent();
         }
 
-        // Cancels an existing order.
-        [HttpPost("{id}/cancel")]
-        public async Task<IActionResult> CancelOrder(string id, [FromBody] string adminNote)
+        // Order cancellation request
+        [HttpPost("request-cancel")]
+        public async Task<IActionResult> RequestOrderCancellation([FromBody] OrderCancellationDto cancellationDto)
         {
-            if (string.IsNullOrWhiteSpace(adminNote))
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Admin note is required for cancellation.");
+                return BadRequest(ModelState);
             }
 
-            var result = await _orderService.CancelOrder(id, adminNote);
-            if (!result)
+            bool result = await _orderService.RequestOrderCancellation(cancellationDto);
+
+            if (result)
             {
-                return NotFound();
+                return Ok(new { Message = "Cancellation request submitted successfully." });
             }
 
-            return NoContent(); 
+            return NotFound(new { Message = "Order not found or already cancelled." });
         }
 
-        // Marks an order as delivered.
-        [HttpPost("{id}/deliver")]
-        public async Task<IActionResult> MarkOrderAsDelivered(string id)
+        // Cancels an existing order.
+        [HttpPost("{id}/cancel")]
+        public async Task<IActionResult> CancelOrder(string id, [FromBody] OrderCancellationDto cancellationDto)
         {
-            var result = await _orderService.MarkOrderAsDelivered(id);
-            if (!result)
+            if (!ModelState.IsValid)
             {
-                return NotFound();
+                return BadRequest(ModelState);
             }
 
-            return NoContent(); 
+            if (id != cancellationDto.Id)
+            {
+                return BadRequest(new { message = "The order ID in the route does not match the order ID in the body." });
+            }
+
+            var result = await _orderService.CancelOrder(cancellationDto);
+
+            if (!result)
+            {
+                return NotFound(new { message = "Order not found or already cancelled." });
+            }
+
+            return Ok(new { message = "Order cancelled successfully." });
         }
 
         // Retrieves the status of an order.
@@ -152,6 +189,53 @@ namespace ColletteAPI.Controllers
             }
 
             return Ok(status);
+        }
+
+        // Get all pending cancellation requests
+        [HttpGet("pending-cancellations")]
+        public async Task<IActionResult> GetPendingCancellationRequests()
+        {
+            try
+            {
+                var pendingCancellationRequests = await _orderService.GetPendingCancellationRequests();
+
+                if (pendingCancellationRequests == null || !pendingCancellationRequests.Any())
+                {
+                    return NotFound(new { Message = "No pending cancellation requests found." });
+                }
+
+                return Ok(pendingCancellationRequests);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while retrieving the data.", Error = ex.Message });
+            }
+        }
+
+        // Vendor to mark products as delivered
+        [HttpPost("{orderId}/vendors/{vendorId}/mark-delivered")]
+        public async Task<IActionResult> MarkProductAsDelivered(string orderId, string vendorId)
+        {
+            bool result = await _orderService.MarkProductAsDelivered(orderId, vendorId);
+            if (!result)
+            {
+                return NotFound(new { message = "Order not found or already delivered." });
+            }
+
+            return Ok(new { message = "Product marked as delivered successfully." });
+        }
+
+        // CSR/Admin to mark entire order as delivered
+        [HttpPost("{orderId}/mark-delivered")]
+        public async Task<IActionResult> MarkOrderAsDeliveredByAdmin(string orderId)
+        {
+            bool result = await _orderService.MarkOrderAsDeliveredByAdmin(orderId);
+            if (!result)
+            {
+                return NotFound(new { message = "Order not found or already delivered." });
+            }
+
+            return Ok(new { message = "Order marked as delivered successfully." });
         }
     }
 }
