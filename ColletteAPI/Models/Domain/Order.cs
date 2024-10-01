@@ -211,6 +211,7 @@ namespace ColletteAPI.Models.Domain
         public DateTime? CancellationDate { get; set; }
 
         [BsonElement("CancelRequestStatus")]
+        [BsonRepresentation(BsonType.String)]
         public CancelRequestStatus CancelRequestStatus { get; set; }
     }
 }

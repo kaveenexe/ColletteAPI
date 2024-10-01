@@ -168,5 +168,30 @@ namespace ColletteAPI.Repositories
                 .Find(order => order.OrderCancellation != null && order.OrderCancellation.CancelRequestStatus == cancelRequestStatus)
                 .ToListAsync();
         }
+
+        // Get order items by vendorId (Vendor-Specific)
+        public async Task<Order> GetOrderByVendorId(string orderId, string vendorId)
+        {
+            var order = await _orders.Find(o => o.OrderId == orderId).FirstOrDefaultAsync();
+
+            if (order == null)
+            {
+                return null;
+            }
+
+            var vendorSpecificItems = order.OrderItems
+                .Where(item => item.VendorId == vendorId)
+                .ToList();
+
+            if (!vendorSpecificItems.Any())
+            {
+                return null;
+            }
+
+            order.OrderItems = vendorSpecificItems;
+
+            return order;
+        }
+
     }
 }

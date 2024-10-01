@@ -18,5 +18,6 @@ namespace ColletteAPI.Services
         Task<List<OrderDto>> GetPendingCancellationRequests();
         Task<bool> MarkProductAsDelivered(string orderId, string vendorId);
         Task<bool> MarkOrderAsDeliveredByAdmin(string orderId);
+        Task<OrderDto> GetOrderByVendorId(string orderId, string vendorId);
     }
 }
