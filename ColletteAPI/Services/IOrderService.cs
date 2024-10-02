@@ -1,4 +1,5 @@
-﻿using ColletteAPI.Models.Dtos;
+﻿using ColletteAPI.Models.Domain;
+using ColletteAPI.Models.Dtos;
 
 namespace ColletteAPI.Services
 {

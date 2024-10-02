@@ -491,9 +491,14 @@ namespace ColletteAPI.Services
         {
             var order = await _orderRepository.GetOrderById(cancellationDto.Id);
 
-            if (order == null || order.Status == OrderStatus.Cancelled)
+            if (order == null)
             {
-                return false;
+                throw new Exception("Order not found.");
+            }
+
+            if (order.Status == OrderStatus.Cancelled)
+            {
+                throw new Exception("Cannot request an order cancellation due to an already cancelled order.");
             }
 
             order.OrderCancellation = new OrderCancellation
@@ -515,9 +520,19 @@ namespace ColletteAPI.Services
         {
             var order = await _orderRepository.GetOrderById(cancellationDto.Id);
 
-            if (order == null || order.Status == OrderStatus.Delivered)
+            if (order == null)
             {
-                return false;
+                throw new Exception("Order not found.");
+            }
+
+            if (order.Status == OrderStatus.Delivered)
+            {
+                throw new Exception("Cannot cancel an already delivered order.");
+            }
+
+            if (order.Status == OrderStatus.PartiallyDelivered)
+            {
+                throw new Exception("Cannot cancel an already partially delivered order.");
             }
 
             order.Status = OrderStatus.Cancelled;
