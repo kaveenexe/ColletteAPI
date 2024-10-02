@@ -125,7 +125,7 @@ namespace ColletteAPI.Repositories
         public async Task<bool> CancelOrder(string id)
         {
             var order = await GetOrderById(id);
-            if (order == null || order.Status == OrderStatus.Delivered)
+            if (order == null || order.Status == OrderStatus.Delivered || order.Status == OrderStatus.PartiallyDelivered)
             {
                 return false;
             }

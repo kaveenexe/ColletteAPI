@@ -139,6 +139,8 @@ namespace ColletteAPI.Models.Dtos
         [Required]
         public string Id { get; set; }
 
+        public string OrderId { get; set; }
+
         public bool CancellationApproved { get; set; }
 
         public DateTime? CancellationDate { get; set; }
