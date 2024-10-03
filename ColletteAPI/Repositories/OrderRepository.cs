@@ -172,7 +172,7 @@ namespace ColletteAPI.Repositories
         // Get order items by vendorId (Vendor-Specific)
         public async Task<Order> GetOrderByVendorId(string orderId, string vendorId)
         {
-            var order = await _orders.Find(o => o.OrderId == orderId).FirstOrDefaultAsync();
+            var order = await _orders.Find(o => o.Id == orderId).FirstOrDefaultAsync();
 
             if (order == null)
             {
@@ -193,5 +193,11 @@ namespace ColletteAPI.Repositories
             return order;
         }
 
+        // Get all orders by vendorId (Vendor-Specific)
+        public async Task<List<Order>> GetOrdersByVendorId(string vendorId)
+        {
+            var orders = await _orders.Find(order => order.OrderItems.Any(item => item.VendorId == vendorId)).ToListAsync();
+            return orders;
+        }
     }
 }

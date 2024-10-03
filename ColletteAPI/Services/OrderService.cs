@@ -727,5 +727,62 @@ namespace ColletteAPI.Services
                     }).ToList()
             };
         }
+
+        // Get all orders related to the vendor
+        public async Task<List<OrderDto>> GetOrdersByVendorId(string vendorId)
+        {
+            var orders = await _orderRepository.GetOrdersByVendorId(vendorId);
+            if (orders == null || !orders.Any())
+            {
+                return new List<OrderDto>();
+            }
+
+            return orders.Select(order => new OrderDto
+            {
+                Id = order.Id,
+                OrderId = order.OrderId,
+                Status = order.Status,
+                OrderDate = order.OrderDate,
+                PaymentMethod = order.PaymentMethod ?? PaymentMethods.Visa,
+                BillingDetails = order.BillingDetails != null
+                    ? new BillingDetailsDto
+                    {
+                        CustomerName = order.BillingDetails.CustomerName,
+                        Email = order.BillingDetails.Email,
+                        Phone = order.BillingDetails.Phone,
+                        SingleBillingAddress = order.BillingDetails.SingleBillingAddress,
+                        BillingAddress = order.BillingDetails.BillingAddress != null
+                            ? new BillingAddressDto
+                            {
+                                StreetAddress = order.BillingDetails.BillingAddress.StreetAddress,
+                                City = order.BillingDetails.BillingAddress.City,
+                                Province = order.BillingDetails.BillingAddress.Province,
+                                PostalCode = order.BillingDetails.BillingAddress.PostalCode,
+                                Country = order.BillingDetails.BillingAddress.Country
+                            }
+                            : null
+                    }
+                    : null,
+                TotalAmount = order.TotalAmount,
+                CreatedByCustomer = order.CreatedByCustomer,
+                CreatedByAdmin = order.CreatedByAdmin,
+                OrderItemsGroups = order.OrderItems
+                    .Where(oi => oi.VendorId == vendorId)
+                    .GroupBy(oi => oi.ListItemId)
+                    .Select(group => new OrderItemGroupDto
+                    {
+                        ListItemId = group.Key,
+                        Items = group.Select(oi => new OrderItemDto
+                        {
+                            ProductId = oi.ProductId,
+                            ProductName = oi.ProductName,
+                            VendorId = oi.VendorId,
+                            Quantity = oi.Quantity,
+                            Price = oi.Price,
+                            ProductStatus = oi.ProductStatus,
+                        }).ToList()
+                    }).ToList()
+            }).ToList();
+        }
     }
 }

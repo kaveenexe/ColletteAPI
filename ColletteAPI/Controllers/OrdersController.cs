@@ -213,7 +213,7 @@ namespace ColletteAPI.Controllers
         }
 
         // Vendor to mark products as delivered
-        [HttpPost("{orderId}/vendors/{vendorId}/mark-delivered")]
+        [HttpPut("{orderId}/vendors/{vendorId}/mark-delivered")]
         public async Task<IActionResult> MarkProductAsDelivered(string orderId, string vendorId)
         {
             bool result = await _orderService.MarkProductAsDelivered(orderId, vendorId);
@@ -250,6 +250,25 @@ namespace ColletteAPI.Controllers
             }
 
             return Ok(orderDto);
+        }
+
+        // Get all orders by vendorId (Vendor-Specific)
+        [HttpGet("vendor/{vendorId}")]
+        public async Task<IActionResult> GetOrdersByVendorId(string vendorId)
+        {
+            if (string.IsNullOrEmpty(vendorId))
+            {
+                return BadRequest(new { message = "Vendor ID cannot be null or empty." });
+            }
+
+            var orders = await _orderService.GetOrdersByVendorId(vendorId);
+
+            if (orders == null || !orders.Any())
+            {
+                return NotFound(new { message = "No orders found for the specified vendor." });
+            }
+
+            return Ok(orders);
         }
     }
 }

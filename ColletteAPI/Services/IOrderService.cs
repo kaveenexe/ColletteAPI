@@ -20,5 +20,6 @@ namespace ColletteAPI.Services
         Task<bool> MarkProductAsDelivered(string orderId, string vendorId);
         Task<bool> MarkOrderAsDeliveredByAdmin(string orderId);
         Task<OrderDto> GetOrderByVendorId(string orderId, string vendorId);
+        Task<List<OrderDto>> GetOrdersByVendorId(string vendorId);
     }
 }
