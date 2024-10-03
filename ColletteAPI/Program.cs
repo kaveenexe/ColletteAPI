@@ -22,6 +22,7 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IUserService, UserService>(); //Register User Service
 builder.Services.AddScoped<IUserRepository, UserRepository>(); //Register User Repository
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>(); // Register Notification Repository
 builder.Services.AddSingleton<AuthService>(); //Register Auth Service
 builder.Services.AddSingleton<JwtService>(); //Register JWT Service
 
