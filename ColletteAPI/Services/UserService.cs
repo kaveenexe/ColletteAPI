@@ -8,12 +8,14 @@ namespace ColletteAPI.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly INotificationRepository _notificationRepository;
         private readonly AuthService _authService;
         private readonly JwtService _jwtService;
 
-        public UserService(IUserRepository userRepository, AuthService authService, JwtService jwtService)
+        public UserService(IUserRepository userRepository, INotificationRepository notificationRepository, AuthService authService, JwtService jwtService)
         {
             _userRepository = userRepository;
+            _notificationRepository = notificationRepository;
             _authService = authService;
             _jwtService = jwtService;
         }
@@ -64,6 +66,17 @@ namespace ColletteAPI.Services
 
         public async Task<User> Register(UserRegisterDto registerDto)
         {
+            if (registerDto == null)
+            {
+                throw new ArgumentNullException(nameof(registerDto), "Registration details cannot be null.");
+            }
+
+            // Check if the notification repository is correctly initialized
+            if (_notificationRepository == null)
+            {
+                throw new NullReferenceException("Notification repository is not initialized.");
+            }
+
             var user = new User
             {
                 NIC = registerDto.NIC,
@@ -75,10 +88,24 @@ namespace ColletteAPI.Services
                 UserType = registerDto.UserType,
                 Address = registerDto.Address,
                 ContactNumber = registerDto.ContactNumber,
-                IsActive = registerDto.UserType == UserRoles.Customer ? false : true // // Set IsActive to false if the user is a Customer
+                IsActive = registerDto.UserType == UserRoles.Customer ? false : true
             };
 
+            // Make sure AddUser is properly working
             await _userRepository.AddUser(user);
+
+            // Create a notification for CSR
+            var notification = new Notification
+            {
+                Message = "New customer registration needs activation.",
+                IsVisibleToCSR = true,
+                IsVisibleToAdmin = false,
+                IsVisibleToVendor = false,
+                IsVisibleToCustomer = false,
+            };
+
+            await _notificationRepository.AddNotification(notification); // Ensure this is working without error
+
             return user;
         }
         public async Task UpdateUser(string id, UserUpdateDto updateDto)
@@ -90,14 +117,28 @@ namespace ColletteAPI.Services
                 throw new KeyNotFoundException("User not found");
             }
 
+            // Update user information
             user.FirstName = updateDto.FirstName ?? user.FirstName;
             user.LastName = updateDto.LastName ?? user.LastName;
             user.Username = updateDto.Username ?? user.Username;
             user.Address = updateDto.Address ?? user.Address;
             user.IsActive = updateDto.IsActive ?? user.IsActive;
 
+            // Update user in the repository
             await _userRepository.UpdateUser(id, user);
+
+            // Resolve the notification if the customer is activated
+            if (user.UserType == UserRoles.Customer && user.IsActive)
+            {
+                var notification = await _notificationRepository.GetNotificationByMessage("New customer registration needs activation.");
+                if (notification != null)
+                {
+                    await _notificationRepository.MarkNotificationAsSeen(notification.NotificationId); // Mark it as seen
+                }
+            }
         }
+
+
 
         public async Task DeleteUser(string id)
         {
