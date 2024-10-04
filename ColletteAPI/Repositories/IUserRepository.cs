@@ -10,5 +10,6 @@ namespace ColletteAPI.Repositories
         Task AddUser(User user);
         Task UpdateUser(string id, User user);
         Task DeleteUser(string id);
+        Task<List<User>> GetPendingCustomers();
     }
 }

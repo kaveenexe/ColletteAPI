@@ -1,4 +1,5 @@
 ﻿using ColletteAPI.Models.Domain;
+using ColletteAPI.Models.Dtos;
 
 namespace ColletteAPI.Repositories
 {
@@ -6,13 +7,20 @@ namespace ColletteAPI.Repositories
     {
         Task<IEnumerable<Order>> GetAllOrders();
         Task<Order> GetOrderById(string id);
+        Task<IEnumerable<Order>> GetOrdersByCustomerId(string customerId);
+        Task<Order> GetOrderByCustomerIdAndOrderId(string customerId, string orderId);
         Task<Order> CreateOrderByCustomer(Order order);
         Task<Order> CreateOrderByAdmin(Order order);
+        Task<bool> UpdateOrder(Order order);
         Task<bool> UpdateOrderStatus(string id, OrderStatus status);
-        Task<bool> CancelOrder(string id, string adminNote);
-        Task<bool> MarkOrderAsDelivered(string id);
+        Task<bool> CancelOrder(string id);
+        Task<bool> RequestOrderCancellation(OrderCancellationDto cancellationDto);
+        Task<List<Order>> GetOrdersByStatus(OrderStatus status);
+        Task<List<Order>> GetOrdersByCancelRequestStatus(CancelRequestStatus cancelRequestStatus);
         Task<bool> DeleteOrder(string id);
         Task<string> GetOrderStatus(string id);
         Task<bool> OrderExists(string orderId);
+        Task<Order> GetOrderByVendorId(string orderId, string vendorId);
+        Task<List<Order>> GetOrdersByVendorId(string vendorId);
     }
 }

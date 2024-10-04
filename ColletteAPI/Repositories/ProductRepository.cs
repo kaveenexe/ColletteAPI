@@ -9,19 +9,17 @@ namespace ColletteAPI.Repositories
         private readonly IMongoCollection<Product> _products;
 
         public ProductRepository(IMongoClient client, IConfiguration configuration)
-
         {
             var database = client.GetDatabase(configuration.GetSection("MongoDB:DatabaseName").Value);
             _products = database.GetCollection<Product>("Products");
         }
 
-        public async Task<List<Product>> GetAllAsync()
+        public async Task<List<Product>> GetAllForVendorAsync(string vendorId)
         {
-            return await _products.Find(_ => true).ToListAsync();
+            return await _products.Find(p => p.VendorId == vendorId).ToListAsync();
         }
 
         public async Task<Product> GetByIdAsync(string id)
-
         {
             return await _products.Find(p => p.Id == id).FirstOrDefaultAsync();
         }
@@ -38,7 +36,7 @@ namespace ColletteAPI.Repositories
 
         public async Task UpdateAsync(string id, Product product)
         {
-            await _products.ReplaceOneAsync(p => p.Id == id, product);
+            await _products.ReplaceOneAsync(p => p.Id == id && p.VendorId == product.VendorId, product);
         }
 
         public async Task DeleteAsync(string id)
@@ -49,6 +47,11 @@ namespace ColletteAPI.Repositories
         public async Task<Product> GetProductById(string productId)
         {
             return await _products.Find(p => p.UniqueProductId == productId).FirstOrDefaultAsync();
+        }
+
+        public async Task<List<Product>> GetAllProductsAsync()
+        {
+            return await _products.Find(_ => true).ToListAsync();
         }
     }
 }

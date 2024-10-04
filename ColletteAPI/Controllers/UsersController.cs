@@ -55,6 +55,11 @@ namespace ColletteAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UserUpdateDto updateDto)
         {
+            if (updateDto == null)
+            {
+                return BadRequest("Invalid payload.");
+            }
+
             try
             {
                 await _userService.UpdateUser(id, updateDto);
@@ -65,6 +70,7 @@ namespace ColletteAPI.Controllers
                 return NotFound(ex.Message);
             }
         }
+
 
         // Delete user (Vendor, CSR, Customer)
         [HttpDelete("{id}")]
@@ -80,5 +86,13 @@ namespace ColletteAPI.Controllers
                 return NotFound(ex.Message);
             }
         }
+        // Get all pending customers
+        [HttpGet("pending-customers")]
+        public async Task<IActionResult> GetPendingCustomers()
+        {
+            var pendingCustomers = await _userService.GetPendingCustomers();
+            return Ok(pendingCustomers);
+        }
+
     }
 }

@@ -49,5 +49,9 @@ namespace ColletteAPI.Repositories
             var objectId = ObjectId.Parse(id);
             await _users.DeleteOneAsync(u => u.Id == objectId.ToString());
         }
+        public async Task<List<User>> GetPendingCustomers()
+        {
+            return await _users.Find(user => user.UserType == "Customer" && user.IsActive == false).ToListAsync();
+        }
     }
 }
