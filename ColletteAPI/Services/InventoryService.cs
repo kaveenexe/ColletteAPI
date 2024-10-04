@@ -1,4 +1,6 @@
-﻿using ColletteAPI.Models.Domain;
+﻿//InventoryService.cs
+
+using ColletteAPI.Models.Domain;
 using ColletteAPI.Models.Dtos;
 using ColletteAPI.Repositories;
 using System.Collections.Generic;
@@ -22,13 +24,13 @@ namespace ColletteAPI.Services
             return inventories.Select(i => new InventoryDto
             {
                 ProductId = i.ProductId,
-                ProductName = i.Product.ProductName,
+                ProductName = i.Product.Name,
                 Quantity = i.Quantity,
                 IsLowStockAlert = i.IsLowStockAlert
             });
         }
 
-        public async Task<InventoryDto> GetInventoryByIdAsync(int inventoryId)
+        public async Task<InventoryDto> GetInventoryByIdAsync(string inventoryId)
         {
             var inventory = await _inventoryRepository.GetInventoryByIdAsync(inventoryId);
             if (inventory == null) return null;
@@ -36,13 +38,13 @@ namespace ColletteAPI.Services
             return new InventoryDto
             {
                 ProductId = inventory.ProductId,
-                ProductName = inventory.Product.ProductName,
+                ProductName = inventory.Product.Name,
                 Quantity = inventory.Quantity,
                 IsLowStockAlert = inventory.IsLowStockAlert
             };
         }
 
-        public async Task<InventoryDto> GetInventoryByProductIdAsync(int productId)
+        public async Task<InventoryDto> GetInventoryByProductIdAsync(string productId)
         {
             var inventory = await _inventoryRepository.GetInventoryByProductIdAsync(productId);
             if (inventory == null) return null;
@@ -50,7 +52,7 @@ namespace ColletteAPI.Services
             return new InventoryDto
             {
                 ProductId = inventory.ProductId,
-                ProductName = inventory.Product.ProductName,
+                ProductName = inventory.Product.Name,
                 Quantity = inventory.Quantity,
                 IsLowStockAlert = inventory.IsLowStockAlert
             };
@@ -68,7 +70,7 @@ namespace ColletteAPI.Services
             await _inventoryRepository.AddInventoryAsync(inventory);
         }
 
-        public async Task UpdateInventoryAsync(int productId, UpdateInventoryDto inventoryDto)
+        public async Task UpdateInventoryAsync(string productId, UpdateInventoryDto inventoryDto)
         {
             var inventory = await _inventoryRepository.GetInventoryByProductIdAsync(productId);
             if (inventory == null) return;
@@ -79,13 +81,13 @@ namespace ColletteAPI.Services
             await _inventoryRepository.UpdateInventoryAsync(inventory);
         }
 
-        public async Task RemoveInventoryAsync(int inventoryId, string orderStatus)
+        public async Task RemoveInventoryAsync(string inventoryId, string orderStatus)
         {
             await _inventoryRepository.RemoveInventoryAsync(inventoryId, orderStatus);
         }
 
         // Automatic stock increment when vendor adds a product
-        public async Task UpdateInventoryForProductCreation(int productId, int quantity)
+        public async Task UpdateInventoryForProductCreation(string productId, int quantity)
         {
             var inventory = await _inventoryRepository.GetInventoryByProductIdAsync(productId);
             if (inventory != null)
@@ -96,7 +98,7 @@ namespace ColletteAPI.Services
         }
 
         // Automatic stock decrement when a user buys a product
-        public async Task UpdateInventoryForProductPurchase(int productId, int quantity)
+        public async Task UpdateInventoryForProductPurchase(string productId, int quantity)
         {
             var inventory = await _inventoryRepository.GetInventoryByProductIdAsync(productId);
             if (inventory != null)

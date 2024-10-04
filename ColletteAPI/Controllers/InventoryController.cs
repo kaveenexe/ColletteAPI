@@ -1,4 +1,5 @@
-﻿
+﻿//InventoryController.cs
+
 using ColletteAPI.Models.Dtos;
 using ColletteAPI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +26,7 @@ namespace ColletteAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetInventoryById(int id)
+        public async Task<IActionResult> GetInventoryById(string id)
         {
             var inventory = await _inventoryService.GetInventoryByIdAsync(id);
             if (inventory == null) return NotFound();
@@ -41,14 +42,14 @@ namespace ColletteAPI.Controllers
         }
 
         [HttpPut("{productId}")]
-        public async Task<IActionResult> UpdateInventory(int productId, [FromBody] UpdateInventoryDto inventoryDto)
+        public async Task<IActionResult> UpdateInventory(string productId, [FromBody] UpdateInventoryDto inventoryDto)
         {
             await _inventoryService.UpdateInventoryAsync(productId, inventoryDto);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> RemoveInventory(int id, [FromQuery] string orderStatus)
+        public async Task<IActionResult> RemoveInventory(string id, [FromQuery] string orderStatus)
         {
             await _inventoryService.RemoveInventoryAsync(id, orderStatus);
             return NoContent();
@@ -56,7 +57,7 @@ namespace ColletteAPI.Controllers
 
         // Vendor adds product -> update inventory
         [HttpPost("vendor/{productId}/add")]
-        public async Task<IActionResult> VendorAddProduct(int productId, [FromQuery] int quantity)
+        public async Task<IActionResult> VendorAddProduct(string productId, [FromQuery] int quantity)
         {
             await _inventoryService.UpdateInventoryForProductCreation(productId, quantity);
             return NoContent();
@@ -64,7 +65,7 @@ namespace ColletteAPI.Controllers
 
         // User buys product -> update inventory
         [HttpPost("user/{productId}/purchase")]
-        public async Task<IActionResult> UserPurchaseProduct(int productId, [FromQuery] int quantity)
+        public async Task<IActionResult> UserPurchaseProduct(string productId, [FromQuery] int quantity)
         {
             await _inventoryService.UpdateInventoryForProductPurchase(productId, quantity);
             return NoContent();

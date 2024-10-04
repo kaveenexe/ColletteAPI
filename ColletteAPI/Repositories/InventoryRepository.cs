@@ -1,4 +1,5 @@
-﻿
+﻿//InventoryRepository.cs
+
 using ColletteAPI.Models.Domain;
 using ColletteAPI.Repositories;
 using MongoDB.Driver;
@@ -23,13 +24,13 @@ namespace ColletteAPI.Data
             return await _inventories.Find(Builders<Inventory>.Filter.Empty).ToListAsync();
         }
 
-        public async Task<Inventory> GetInventoryByIdAsync(int inventoryId)
+        public async Task<Inventory> GetInventoryByIdAsync(string inventoryId)
         {
             var filter = Builders<Inventory>.Filter.Eq(i => i.InventoryId, inventoryId);
             return await _inventories.Find(filter).FirstOrDefaultAsync();
         }
 
-        public async Task<Inventory> GetInventoryByProductIdAsync(int productId)
+        public async Task<Inventory> GetInventoryByProductIdAsync(string productId)
         {
             var filter = Builders<Inventory>.Filter.Eq(i => i.ProductId, productId);
             return await _inventories.Find(filter).FirstOrDefaultAsync();
@@ -46,7 +47,7 @@ namespace ColletteAPI.Data
             await _inventories.ReplaceOneAsync(filter, inventory);
         }
 
-        public async Task RemoveInventoryAsync(int inventoryId, string orderStatus)
+        public async Task RemoveInventoryAsync(string inventoryId, string orderStatus)
         {
             var filter = Builders<Inventory>.Filter.Eq(i => i.InventoryId, inventoryId);
             var inventory = await _inventories.Find(filter).FirstOrDefaultAsync();
@@ -62,7 +63,7 @@ namespace ColletteAPI.Data
             }
         }
 
-        public async Task<bool> InventoryExistsAsync(int productId)
+        public async Task<bool> InventoryExistsAsync(string productId)
         {
             var filter = Builders<Inventory>.Filter.Eq(i => i.ProductId, productId);
             return await _inventories.Find(filter).AnyAsync();
