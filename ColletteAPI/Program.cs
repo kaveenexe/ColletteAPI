@@ -43,6 +43,12 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 // Register ICategoryRepository
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
+// Register IInventoryService
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+
+// Register IInventoryRepository
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+
 
 // Add CORS services
 builder.Services.AddCors(options =>
