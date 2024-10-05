@@ -12,6 +12,12 @@ namespace ColletteAPI.Repositories
         // Get unresolved notifications for CSR
         Task<List<Notification>> GetNotificationsForCSR();
 
+        // Get unresolved notifications for Admin
+        Task<List<Notification>> GetNotificationsForAdmin();
+
+        // Get resolved notifications for a Particular Customer
+        Task<List<Notification>> GetResolvedNotificationsByCustomerId(string customerId);
+
         // Mark a notification as seen by CSR
         Task MarkNotificationAsSeen(string notificationId);
 
