@@ -16,12 +16,14 @@ namespace ColletteAPI.Services
         private readonly IOrderRepository _orderRepository;
         private readonly IProductRepository _productRepository;
         private readonly IUserRepository _userRepository;
+        private readonly INotificationRepository _notificationRepository;
 
-        public OrderService(IOrderRepository orderRepository, IProductRepository productRepository, IUserRepository userRepository)
+        public OrderService(IOrderRepository orderRepository, IProductRepository productRepository, IUserRepository userRepository, INotificationRepository notificationRepository)
         {
             _orderRepository = orderRepository;
             _productRepository = productRepository;
             _userRepository = userRepository;
+            _notificationRepository = notificationRepository;
         }
 
         // Get all orders
@@ -477,7 +479,26 @@ namespace ColletteAPI.Services
                 return false;
             }
 
-            return await _orderRepository.UpdateOrderStatus(id, orderDto.Status);
+            bool updateResult = await _orderRepository.UpdateOrderStatus(id, orderDto.Status);
+
+            if (updateResult && orderDto.Status == OrderStatus.Delivered)
+            {
+                // Create a notification for the customer
+                var notification = new Notification
+                {
+                    Message = $"Your order {order.OrderId} has been successfully delivered.",
+                    IsVisibleToCSR = false,
+                    IsVisibleToAdmin = false,
+                    IsVisibleToVendor = false,
+                    IsVisibleToCustomer = true,
+                    IsResolved = true,
+                    CustomerId = order.CustomerId
+                };
+
+                await _notificationRepository.AddNotification(notification);
+            }
+
+            return updateResult;
         }
 
         // Delete order
@@ -501,6 +522,11 @@ namespace ColletteAPI.Services
                 throw new Exception("Cannot request an order cancellation due to an already cancelled order.");
             }
 
+            if (_notificationRepository == null)
+            {
+                throw new NullReferenceException("Notification repository is not initialized.");
+            }
+
             order.OrderCancellation = new OrderCancellation
             {
                 Id = ObjectId.GenerateNewId().ToString(),
@@ -512,27 +538,35 @@ namespace ColletteAPI.Services
 
             await _orderRepository.UpdateOrder(order);
 
+            // Create a notification for Admin and CSR
+            var notification = new Notification
+            {
+                Message = $"You have received a cancellation request for the order {order.OrderId}",
+                IsVisibleToCSR = true,
+                IsVisibleToAdmin = true,
+                IsVisibleToVendor = false,
+                IsVisibleToCustomer = false,
+            };
+
+            await _notificationRepository.AddNotification(notification);
+
             return true;
         }
 
-        // Approve order cancellation
         public async Task<bool> CancelOrder(OrderCancellationDto cancellationDto)
         {
-            var order = await _orderRepository.GetOrderById(cancellationDto.Id);
+            var order = await _orderRepository.GetOrderById(cancellationDto.OrderId);
 
             if (order == null)
             {
                 throw new Exception("Order not found.");
             }
 
-            if (order.Status == OrderStatus.Delivered)
+            if (order.Status == OrderStatus.Delivered || order.Status == OrderStatus.PartiallyDelivered)
             {
-                throw new Exception("Cannot cancel an already delivered order.");
-            }
-
-            if (order.Status == OrderStatus.PartiallyDelivered)
-            {
-                throw new Exception("Cannot cancel an already partially delivered order.");
+                cancellationDto.CancelRequestStatus = CancelRequestStatus.Rejected;
+                await RejectCancelOrder(order, order.Status == OrderStatus.Delivered ? "delivered" : "partially delivered");
+                return false;
             }
 
             order.Status = OrderStatus.Cancelled;
@@ -546,7 +580,67 @@ namespace ColletteAPI.Services
                 CancelRequestStatus = CancelRequestStatus.Accepted
             };
 
-            return await _orderRepository.UpdateOrder(order);
+            var updateResult = await _orderRepository.UpdateOrder(order);
+
+            if (updateResult)
+            {
+                // Create a notification for successful cancellation
+                var notification = new Notification
+                {
+                    Message = $"Your order {order.OrderId} has been successfully cancelled.",
+                    IsVisibleToCSR = false,
+                    IsVisibleToAdmin = false,
+                    IsVisibleToVendor = false,
+                    IsVisibleToCustomer = true,
+                    IsResolved = true,
+                    CustomerId = order.CustomerId
+                };
+
+                await _notificationRepository.AddNotification(notification);
+
+                // Mark the notification for the cancellation request as resolved
+                var cancellationNotification = await _notificationRepository.GetNotificationByMessage($"You have received a cancellation request for the order {order.OrderId}");
+                if (cancellationNotification != null)
+                {
+                    await _notificationRepository.MarkNotificationAsSeen(cancellationNotification.NotificationId);
+                }
+            }
+
+            return updateResult;
+        }
+
+        // Method to reject a cancellation request
+        public async Task<bool> RejectCancelOrder(Order order, string statusReason)
+        {
+            // Create a notification that cancellation is rejected
+            var notification = new Notification
+            {
+                Message = $"Your order {order.OrderId} cannot be cancelled as it has already been {statusReason}.",
+                IsVisibleToCSR = false,
+                IsVisibleToAdmin = false,
+                IsVisibleToVendor = false,
+                IsVisibleToCustomer = true,
+                IsResolved = true,
+                CustomerId = order.CustomerId
+            };
+
+            await _notificationRepository.AddNotification(notification);
+
+            order.OrderCancellation.CancelRequestStatus = CancelRequestStatus.Rejected;
+
+            var orderUpdated = await _orderRepository.UpdateOrder(order);
+
+            if (orderUpdated)
+            {
+                // Mark the notification for the cancellation request as resolved
+                var cancellationNotification = await _notificationRepository.GetNotificationByMessage($"You have received a cancellation request for the order {order.OrderId}");
+                if (cancellationNotification != null)
+                {
+                    await _notificationRepository.MarkNotificationAsSeen(cancellationNotification.NotificationId);
+                }
+            }
+
+            return orderUpdated;
         }
 
         // Method to get order status
@@ -641,10 +735,41 @@ namespace ColletteAPI.Services
             if (order.OrderItems.All(item => item.ProductStatus == ProductStatus.Delivered))
             {
                 order.Status = OrderStatus.Delivered;
+
+                // Create a notification for the customer
+                var customerNotification = new Notification
+                {
+                    Message = $"Your order {order.OrderId} has been successfully delivered.",
+                    IsVisibleToCSR = false,
+                    IsVisibleToAdmin = false,
+                    IsVisibleToVendor = false,
+                    IsVisibleToCustomer = true,
+                    IsResolved = true,
+                    CustomerId = order.CustomerId
+                };
+
+                await _notificationRepository.AddNotification(customerNotification);
             }
             else
             {
                 order.Status = OrderStatus.PartiallyDelivered;
+
+                var productIds = string.Join(", ", vendorProducts.Select(p => p.ProductId));
+
+                var partialNotificationMessage = $"The delivery for order {order.OrderId} is ready. The following products have been delivered: {productIds}.";
+
+                var adminNotification = new Notification
+                {
+                    Message = partialNotificationMessage,
+                    IsVisibleToCSR = true,
+                    IsVisibleToAdmin = true,
+                    IsVisibleToVendor = false,
+                    IsVisibleToCustomer = false,
+                    IsResolved = false,
+                    CustomerId = null
+                };
+
+                await _notificationRepository.AddNotification(adminNotification);
             }
 
             await _orderRepository.UpdateOrder(order);

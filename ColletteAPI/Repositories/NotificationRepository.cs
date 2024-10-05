@@ -24,6 +24,16 @@ namespace ColletteAPI.Repositories
             return await _notifications.Find(n => n.IsVisibleToCSR && !n.IsResolved).ToListAsync();
         }
 
+        public async Task<List<Notification>> GetNotificationsForAdmin()
+        {
+            return await _notifications.Find(n => n.IsVisibleToAdmin && !n.IsResolved).ToListAsync();
+        }
+
+        public async Task<List<Notification>> GetResolvedNotificationsByCustomerId(string customerId)
+        {
+            return await _notifications.Find(n => n.CustomerId == customerId && n.IsResolved).ToListAsync();
+        }
+
         public async Task MarkNotificationAsSeen(string notificationId)
         {
             var filter = Builders<Notification>.Filter.Eq(n => n.NotificationId, notificationId);

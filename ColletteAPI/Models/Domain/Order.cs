@@ -36,7 +36,8 @@ namespace ColletteAPI.Models.Domain
     public enum CancelRequestStatus
     {
         Pending,
-        Accepted
+        Accepted,
+        Rejected
     }
 
     // Order details
