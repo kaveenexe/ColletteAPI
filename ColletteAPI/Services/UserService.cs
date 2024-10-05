@@ -45,7 +45,7 @@ namespace ColletteAPI.Services
             // Prevent login if the account is not active
             if (!user.IsActive)
             {
-                throw new Exception("Your account is not active. Please contact CSR or Administrator.");
+                throw new UnauthorizedAccessException("Your account is not active. Please contact CSR or Administrator.");
             }
 
             var token = _jwtService.GenerateToken(user.Id, user.UserType);

@@ -19,13 +19,24 @@ namespace ColletteAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto loginDto)
         {
-            var authResponse = await _userService.Authenticate(loginDto);
-            if (authResponse == null)
+            try
             {
-                return Unauthorized("Invalid credentials");
+                var authResponse = await _userService.Authenticate(loginDto);
+                if (authResponse == null)
+                {
+                    return Unauthorized("Invalid credentials");
+                }
+                return Ok(authResponse); // Returns JWT token and user details
             }
-
-            return Ok(authResponse); // Returns JWT token and user details
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (optional)
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
         }
 
         [HttpPost("register")]
