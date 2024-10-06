@@ -1,14 +1,14 @@
-﻿//InventoryController.cs
+﻿// InventoryController.cs
+// Handles HTTP requests for inventory management.
 
-using ColletteAPI.Models.Dtos;
-using ColletteAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+using ColletteAPI.Services;
+using ColletteAPI.Models.Dtos;
 
 namespace ColletteAPI.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class InventoryController : ControllerBase
     {
         private readonly IInventoryService _inventoryService;
@@ -18,6 +18,7 @@ namespace ColletteAPI.Controllers
             _inventoryService = inventoryService;
         }
 
+        // GET: api/inventory
         [HttpGet]
         public async Task<IActionResult> GetAllInventories()
         {
@@ -25,50 +26,16 @@ namespace ColletteAPI.Controllers
             return Ok(inventories);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetInventoryById(string id)
+        // GET: api/inventory/{productId}
+        [HttpGet("{productId}")]
+        public async Task<IActionResult> GetInventoryByProductId(string productId)
         {
-            var inventory = await _inventoryService.GetInventoryByIdAsync(id);
-            if (inventory == null) return NotFound();
-
+            var inventory = await _inventoryService.GetInventoryByProductIdAsync(productId);
+            if (inventory == null)
+            {
+                return NotFound();
+            }
             return Ok(inventory);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> AddInventory([FromBody] CreateInventoryDto inventoryDto)
-        {
-            await _inventoryService.AddInventoryAsync(inventoryDto);
-            return CreatedAtAction(nameof(GetInventoryById), new { id = inventoryDto.ProductId }, inventoryDto);
-        }
-
-        [HttpPut("{productId}")]
-        public async Task<IActionResult> UpdateInventory(string productId, [FromBody] UpdateInventoryDto inventoryDto)
-        {
-            await _inventoryService.UpdateInventoryAsync(productId, inventoryDto);
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> RemoveInventory(string id, [FromQuery] string orderStatus)
-        {
-            await _inventoryService.RemoveInventoryAsync(id, orderStatus);
-            return NoContent();
-        }
-
-        // Vendor adds product -> update inventory
-        [HttpPost("vendor/{productId}/add")]
-        public async Task<IActionResult> VendorAddProduct(string productId, [FromQuery] int quantity)
-        {
-            await _inventoryService.UpdateInventoryForProductCreation(productId, quantity);
-            return NoContent();
-        }
-
-        // User buys product -> update inventory
-        [HttpPost("user/{productId}/purchase")]
-        public async Task<IActionResult> UserPurchaseProduct(string productId, [FromQuery] int quantity)
-        {
-            await _inventoryService.UpdateInventoryForProductPurchase(productId, quantity);
-            return NoContent();
         }
     }
 }
