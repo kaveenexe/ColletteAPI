@@ -1,72 +1,49 @@
-﻿//InventoryRepository.cs
-
-using ColletteAPI.Models.Domain;
-using ColletteAPI.Repositories;
+﻿// InventoryRepository.cs
 using MongoDB.Driver;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using ColletteAPI.Models.Domain;
 
-namespace ColletteAPI.Data
+namespace ColletteAPI.Repositories
 {
     public class InventoryRepository : IInventoryRepository
     {
         private readonly IMongoCollection<Inventory> _inventories;
 
-        public InventoryRepository(IMongoClient client, IConfiguration configuration)
+        public InventoryRepository(IMongoDatabase database)
         {
-            var database = client.GetDatabase(configuration.GetSection("MongoDB:DatabaseName").Value);
             _inventories = database.GetCollection<Inventory>("Inventories");
         }
 
+        // Fetch all inventories
         public async Task<IEnumerable<Inventory>> GetAllInventoriesAsync()
         {
-            return await _inventories.Find(Builders<Inventory>.Filter.Empty).ToListAsync();
+            return await _inventories.Find(inv => true).ToListAsync();
         }
 
-        public async Task<Inventory> GetInventoryByIdAsync(string inventoryId)
-        {
-            var filter = Builders<Inventory>.Filter.Eq(i => i.InventoryId, inventoryId);
-            return await _inventories.Find(filter).FirstOrDefaultAsync();
-        }
-
+        // Fetch inventory by ProductId
         public async Task<Inventory> GetInventoryByProductIdAsync(string productId)
         {
-            var filter = Builders<Inventory>.Filter.Eq(i => i.ProductId, productId);
-            return await _inventories.Find(filter).FirstOrDefaultAsync();
+            return await _inventories.Find(inv => inv.ProductId == productId).FirstOrDefaultAsync();
         }
 
-        public async Task AddInventoryAsync(Inventory inventory)
+        // Add new inventory entry
+        public async Task<Inventory> AddInventoryAsync(Inventory inventory)
         {
             await _inventories.InsertOneAsync(inventory);
+            return inventory;
         }
 
-        public async Task UpdateInventoryAsync(Inventory inventory)
+        // Update existing inventory entry
+        public async Task<bool> UpdateInventoryAsync(Inventory inventory)
         {
-            var filter = Builders<Inventory>.Filter.Eq(i => i.InventoryId, inventory.InventoryId);
-            await _inventories.ReplaceOneAsync(filter, inventory);
+            var result = await _inventories.ReplaceOneAsync(inv => inv.Id == inventory.Id, inventory);
+            return result.ModifiedCount > 0;
         }
 
-        public async Task RemoveInventoryAsync(string inventoryId, string orderStatus)
+        // Delete inventory entry
+        public async Task<bool> DeleteInventoryAsync(string id)
         {
-            var filter = Builders<Inventory>.Filter.Eq(i => i.InventoryId, inventoryId);
-            var inventory = await _inventories.Find(filter).FirstOrDefaultAsync();
-
-            // Only allow deletion for certain order statuses
-            if (inventory != null && (orderStatus == "Purchased" || orderStatus == "Accepted" || orderStatus == "Processing"))
-            {
-                await _inventories.DeleteOneAsync(filter);
-            }
-            else
-            {
-                throw new InvalidOperationException("Inventory cannot be removed for Delivered or Cancelled orders.");
-            }
-        }
-
-        public async Task<bool> InventoryExistsAsync(string productId)
-        {
-            var filter = Builders<Inventory>.Filter.Eq(i => i.ProductId, productId);
-            return await _inventories.Find(filter).AnyAsync();
+            var result = await _inventories.DeleteOneAsync(inv => inv.Id == id);
+            return result.DeletedCount > 0;
         }
     }
 }
