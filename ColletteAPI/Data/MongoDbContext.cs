@@ -24,4 +24,6 @@ public class MongoDbContext
 
     public IMongoCollection<Inventory> Inventories => _database.GetCollection<Inventory>("Inventories");
 
+    public IMongoCollection<Comment> Comments => _database.GetCollection<Comment>("Comments");
+
 }
