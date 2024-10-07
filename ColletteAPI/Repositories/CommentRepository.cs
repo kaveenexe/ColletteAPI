@@ -11,42 +11,34 @@ namespace ColletteAPI.Repositories
     {
         private readonly IMongoCollection<Comment> _comments;
 
-        public CommentRepository(IMongoClient client, IConfiguration configuration)
+        public CommentRepository(IMongoDatabase database)
         {
-            var database = client.GetDatabase(configuration.GetSection("MongoDB:DatabaseName").Value);
             _comments = database.GetCollection<Comment>("Comments");
         }
 
-        // Add a new comment
-        public async Task<Comment> AddComment(Comment comment)
+        // Add a comment
+        public async Task AddAsync(Comment comment)
         {
             await _comments.InsertOneAsync(comment);
-            return comment;
         }
 
-        // Get a comment by ID
-        public async Task<Comment> GetCommentById(string commentId)
+        // Update a comment
+        public async Task UpdateAsync(Comment comment)
+        {
+            var filter = Builders<Comment>.Filter.Eq(c => c.Id, comment.Id);
+            await _comments.ReplaceOneAsync(filter, comment);
+        }
+
+        // Get comment by ID
+        public async Task<Comment> GetByIdAsync(string commentId)
         {
             return await _comments.Find(c => c.Id == commentId).FirstOrDefaultAsync();
         }
 
-        // Get comments by Vendor ID
-        public async Task<List<Comment>> GetCommentsByVendorId(string vendorId)
+        // Get comments by vendor ID
+        public async Task<IEnumerable<Comment>> GetByVendorIdAsync(string vendorId)
         {
             return await _comments.Find(c => c.VendorId == vendorId).ToListAsync();
-        }
-
-        // Update a comment by ID (only by relevant customer)
-        public async Task<Comment> UpdateComment(string commentId, string customerId, UpdateCommentDto updateDto)
-        {
-            var comment = await _comments.Find(c => c.Id == commentId && c.CustomerId == customerId).FirstOrDefaultAsync();
-            if (comment != null)
-            {
-                comment.CommentText = updateDto.CommentText;
-                comment.Rating = updateDto.Rating;
-                await _comments.ReplaceOneAsync(c => c.Id == commentId, comment);
-            }
-            return comment;
         }
     }
 }

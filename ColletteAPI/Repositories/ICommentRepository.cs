@@ -10,9 +10,9 @@ namespace ColletteAPI.Repositories
 {
     public interface ICommentRepository
     {
-        Task<Comment> AddComment(Comment comment);
-        Task<Comment> GetCommentById(string commentId);
-        Task<List<Comment>> GetCommentsByVendorId(string vendorId);
-        Task<Comment> UpdateComment(string commentId, string customerId, UpdateCommentDto updateDto);
+        Task AddAsync(Comment comment);
+        Task UpdateAsync(Comment comment);
+        Task<Comment> GetByIdAsync(string commentId);
+        Task<IEnumerable<Comment>> GetByVendorIdAsync(string vendorId);
     }
 }
