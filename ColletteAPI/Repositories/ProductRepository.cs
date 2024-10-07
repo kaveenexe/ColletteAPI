@@ -49,6 +49,11 @@ namespace ColletteAPI.Repositories
             return await _products.Find(p => p.UniqueProductId == productId).FirstOrDefaultAsync();
         }
 
+        public async Task<Product> GetProductByPId(string id)
+        {
+            return await _products.Find(p => p.Id == id).FirstOrDefaultAsync();
+        }
+
         public async Task<List<Product>> GetAllProductsAsync()
         {
             return await _products.Find(_ => true).ToListAsync();
