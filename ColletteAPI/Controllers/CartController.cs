@@ -42,15 +42,19 @@ namespace ColletteAPI.Controllers
             return Ok();
         }
 
-        [HttpPut("{userId}/items/{productId}")]
-        public async Task<ActionResult> UpdateCartItemQuantity(string userId, string productId, [FromBody] int quantity)
+        public class UpdateQuantityRequest
         {
-            if (quantity < 1)
+            public int Quantity { get; set; }
+        }
+
+        [HttpPut("{userId}/items/{productId}")]
+        public async Task<ActionResult> UpdateCartItemQuantity(string userId, string productId, [FromBody] UpdateQuantityRequest request)
+        {
+            if (request == null || request.Quantity < 1)
             {
                 return BadRequest("Quantity must be greater than zero.");
             }
-
-            await _cartRepository.UpdateCartItemQuantityAsync(userId, productId, quantity);
+            await _cartRepository.UpdateCartItemQuantityAsync(userId, productId, request.Quantity);
             return Ok();
         }
 
