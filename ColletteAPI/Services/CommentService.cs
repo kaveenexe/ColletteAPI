@@ -19,7 +19,7 @@ namespace ColletteAPI.Services
         }
 
         // Add a comment
-        public async Task<CommentDto> AddComment(CreateCommentDto createCommentDto)
+        public async Task<CommentDto> AddCommentAsync(CreateCommentDto createCommentDto)
         {
             var comment = new Comment
             {
@@ -29,44 +29,65 @@ namespace ColletteAPI.Services
                 Rating = createCommentDto.Rating
             };
 
-            var result = await _commentRepository.AddComment(comment);
-            return MapToDto(result);
-        }
-
-        // Get a comment by ID
-        public async Task<CommentDto> GetCommentById(string commentId)
-        {
-            var comment = await _commentRepository.GetCommentById(commentId);
-            return MapToDto(comment);
-        }
-
-        // Get comments by Vendor ID
-        public async Task<List<CommentDto>> GetCommentsByVendorId(string vendorId)
-        {
-            var comments = await _commentRepository.GetCommentsByVendorId(vendorId);
-            return comments.ConvertAll(c => MapToDto(c));
-        }
-
-        // Update a comment (only the relevant customer can update)
-        public async Task<CommentDto> UpdateComment(string commentId, string customerId, UpdateCommentDto updateCommentDto)
-        {
-            var updatedComment = await _commentRepository.UpdateComment(commentId, customerId, updateCommentDto);
-            return MapToDto(updatedComment);
-        }
-
-        // Helper method to map Comment to CommentDto
-        private CommentDto MapToDto(Comment comment)
-        {
-            if (comment == null) return null;
-
+            await _commentRepository.AddAsync(comment);
             return new CommentDto
             {
                 Id = comment.Id,
                 VendorId = comment.VendorId,
                 CustomerId = comment.CustomerId,
                 CommentText = comment.CommentText,
-                Rating = comment.Rating,
-                CreatedAt = comment.CreatedAt
+                Rating = comment.Rating
+            };
+        }
+
+        // Update the comment text
+        public async Task<CommentDto> UpdateCommentAsync(string commentId, UpdateCommentDto updateCommentDto)
+        {
+            var existingComment = await _commentRepository.GetByIdAsync(commentId);
+            if (existingComment == null)
+            {
+                throw new KeyNotFoundException("Comment not found.");
+            }
+
+            existingComment.CommentText = updateCommentDto.CommentText;
+
+            await _commentRepository.UpdateAsync(existingComment);
+
+            return new CommentDto
+            {
+                Id = existingComment.Id,
+                VendorId = existingComment.VendorId,
+                CustomerId = existingComment.CustomerId,
+                CommentText = existingComment.CommentText,
+                Rating = existingComment.Rating
+            };
+        }
+
+        // Get comments by vendor
+        public async Task<IEnumerable<CommentDto>> GetCommentsByVendorIdAsync(string vendorId)
+        {
+            var comments = await _commentRepository.GetByVendorIdAsync(vendorId);
+            return comments.Select(c => new CommentDto
+            {
+                Id = c.Id,
+                VendorId = c.VendorId,
+                CustomerId = c.CustomerId,
+                CommentText = c.CommentText,
+                Rating = c.Rating
+            }).ToList();
+        }
+
+        // Get comment by ID
+        public async Task<CommentDto> GetCommentByIdAsync(string commentId)
+        {
+            var comment = await _commentRepository.GetByIdAsync(commentId);
+            return new CommentDto
+            {
+                Id = comment.Id,
+                VendorId = comment.VendorId,
+                CustomerId = comment.CustomerId,
+                CommentText = comment.CommentText,
+                Rating = comment.Rating
             };
         }
     }

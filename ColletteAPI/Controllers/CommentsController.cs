@@ -1,4 +1,4 @@
-﻿// CommentController.cs
+﻿// CommentsController.cs
 // API controller for managing comments.
 
 using ColletteAPI.Models.Dtos;
@@ -21,39 +21,74 @@ namespace ColletteAPI.Controllers
 
         // POST: api/comment
         [HttpPost]
-        public async Task<IActionResult> AddComment([FromBody] CreateCommentDto createCommentDto)
+        public async Task<IActionResult> AddCommentAsync([FromBody] CreateCommentDto createCommentDto)
         {
-            var result = await _commentService.AddComment(createCommentDto);
+            var result = await _commentService.AddCommentAsync(createCommentDto);
             return Ok(result);
         }
 
-        // GET: api/comment/{id}
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetCommentById(string id)
-        {
-            var result = await _commentService.GetCommentById(id);
-            if (result == null)
-                return NotFound();
-            return Ok(result);
-        }
+        
 
-        // GET: api/comment/vendor/{vendorId}
+        // GET: api/Comment/vendor/{vendorId}
+        // Retrieves all comments for a specific vendor by vendor ID
         [HttpGet("vendor/{vendorId}")]
         public async Task<IActionResult> GetCommentsByVendorId(string vendorId)
         {
-            var results = await _commentService.GetCommentsByVendorId(vendorId);
-            return Ok(results);
+            try
+            {
+                var result = await _commentService.GetCommentsByVendorIdAsync(vendorId);
+                if (result == null || !result.Any())
+                {
+                    return NotFound($"No comments found for vendor with ID {vendorId}.");
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
-        // PUT: api/comment/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateComment(string id, [FromBody] UpdateCommentDto updateCommentDto)
+        // GET: api/Comment/{commentId}
+        // Retrieves a comment by its ID
+        [HttpGet("{commentId}")]
+        public async Task<IActionResult> GetCommentById(string commentId)
         {
-            var customerId = "Get this from authenticated user context"; // You need to fetch the customer ID from auth context.
-            var result = await _commentService.UpdateComment(id, customerId, updateCommentDto);
-            if (result == null)
-                return NotFound();
-            return Ok(result);
+            try
+            {
+                var result = await _commentService.GetCommentByIdAsync(commentId);
+                if (result == null)
+                {
+                    return NotFound($"Comment with ID {commentId} not found.");
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
+
+        // PUT: api/Comment/{commentId}
+        // Updates the comment text only (rating cannot be modified)
+        [HttpPut("{commentId}")]
+        public async Task<IActionResult> UpdateComment(string commentId, UpdateCommentDto updateCommentDto)
+        {
+            try
+            {
+                var result = await _commentService.UpdateCommentAsync(commentId, updateCommentDto);
+                if (result == null)
+                {
+                    return BadRequest("Failed to update comment or rating cannot be modified.");
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
     }
 }
