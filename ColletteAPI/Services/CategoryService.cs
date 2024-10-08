@@ -22,7 +22,8 @@ namespace ColletteAPI.Services
             return categories.Select(c => new CategoryDto
             {
                 Id = c.Id,
-                Name = c.Name
+                Name = c.Name,
+                Description = c.Description 
             });
         }
 
@@ -34,7 +35,8 @@ namespace ColletteAPI.Services
             return new CategoryDto
             {
                 Id = category.Id,
-                Name = category.Name
+                Name = category.Name,
+                Description = category.Description
             };
         }
 
@@ -43,7 +45,7 @@ namespace ColletteAPI.Services
             var category = new Category
             {
                 Name = categoryDto.Name,
-                Description = "Default Description" // If needed
+                Description = categoryDto.Description
             };
 
             var newCategory = await _categoryRepository.AddAsync(category);
@@ -51,7 +53,9 @@ namespace ColletteAPI.Services
             return new CategoryDto
             {
                 Id = newCategory.Id,
-                Name = newCategory.Name
+                Name = newCategory.Name,
+                Description = newCategory.Description
+                
             };
         }
 
@@ -67,7 +71,8 @@ namespace ColletteAPI.Services
             return new CategoryDto
             {
                 Id = updatedCategory.Id,
-                Name = updatedCategory.Name
+                Name = updatedCategory.Name,
+                Description = updatedCategory.Description
             };
         }
 
