@@ -4,6 +4,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ColletteAPI.Models
 {
+
+    //Defining Products Model
     public class Product
     {
         [BsonId]

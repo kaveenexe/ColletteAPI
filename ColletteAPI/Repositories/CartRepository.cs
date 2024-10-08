@@ -1,11 +1,16 @@
-﻿using ColletteAPI.Models;
+﻿/*
+ * File: CartRepository.cs
+ * Description: Implements the ICartRepository interface, providing methods for cart operations using MongoDB as the data store.
+ */
+
+using ColletteAPI.Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Threading.Tasks;
 
 namespace ColletteAPI.Repositories
 {
-   
+    // Interface defining the contract for cart repository operations.
     public class CartRepository : ICartRepository
     {
         private readonly IMongoCollection<Cart> _carts;
@@ -16,12 +21,14 @@ namespace ColletteAPI.Repositories
             _carts = database.GetCollection<Cart>("Carts");
         }
 
+        // Retrieves the cart for a specific user.
         public async Task<Cart> GetCartAsync(string userId)
         {
             return await _carts.Find(c => c.UserId == userId).FirstOrDefaultAsync()
                 ?? new Cart { UserId = userId };
         }
 
+        // Adds an item to the user's cart.
         public async Task AddToCartAsync(string userId, CartItem newItem)
         {
             var filter = Builders<Cart>.Filter.Eq(c => c.UserId, userId);
@@ -66,7 +73,7 @@ namespace ColletteAPI.Repositories
             }
         }
 
-
+        // Removes an item from the user's cart.
         public async Task RemoveFromCartAsync(string userId, string productId)
         {
             var cart = await GetCartAsync(userId);
@@ -76,6 +83,7 @@ namespace ColletteAPI.Repositories
             await _carts.ReplaceOneAsync(c => c.UserId == userId, cart);
         }
 
+        // Updates the quantity of an item in the user's cart.
         public async Task UpdateCartItemQuantityAsync(string userId, string productId, int quantity)
         {
             var cart = await GetCartAsync(userId);
@@ -90,6 +98,7 @@ namespace ColletteAPI.Repositories
             }
         }
 
+        // Clears all items from the user's cart.
         public async Task ClearCartAsync(string userId)
         {
             await _carts.DeleteOneAsync(c => c.UserId == userId);

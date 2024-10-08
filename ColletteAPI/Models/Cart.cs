@@ -5,6 +5,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ColletteAPI.Models
 {
+
+    //Deifining Cart model
     public class Cart
     {
         [BsonId]

@@ -1,4 +1,9 @@
-﻿using System.Collections.Generic;
+﻿/*
+ * File: ProductsController.cs
+ * Description: Manages HTTP requests for product-related operations, including creating, retrieving, updating, and deleting products for vendors.
+ */
+
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +13,8 @@ using System.Text.Json;
 
 namespace ColletteAPI.Controllers
 {
+
+    // Controller responsible for managing product-related operations.
     [Route("api/[controller]")]
     [ApiController]
     public class ProductsController : ControllerBase
@@ -15,12 +22,14 @@ namespace ColletteAPI.Controllers
         private readonly IProductRepository _productRepository;
         private readonly ILogger<ProductsController> _logger;
 
+        // Constructor for ProductsController.
         public ProductsController(IProductRepository productRepository, ILogger<ProductsController> logger)
         {
             _productRepository = productRepository;
             _logger = logger;
         }
 
+        // Creates a new product.
         [HttpPost]
         public async Task<ActionResult<Product>> CreateProduct([FromBody] Product product, [FromQuery] string vendorId)
         {
@@ -45,6 +54,7 @@ namespace ColletteAPI.Controllers
             }
         }
 
+        // Retrieves all products for a specific vendor.
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts([FromQuery] string vendorId)
         {
@@ -52,6 +62,7 @@ namespace ColletteAPI.Controllers
             return Ok(products);
         }
 
+        // Retrieves a specific product by its ID.
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> GetProduct(string id, [FromQuery] string vendorId)
         {
@@ -65,6 +76,7 @@ namespace ColletteAPI.Controllers
             return product;
         }
 
+        // Updates an existing product.
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct(string id, Product product, [FromQuery] string vendorId)
         {
@@ -78,6 +90,7 @@ namespace ColletteAPI.Controllers
             return NoContent();
         }
 
+        // Deletes a product.
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(string id, [FromQuery] string vendorId)
         {
