@@ -1,5 +1,14 @@
-﻿namespace ColletteAPI.Models.Dtos
+﻿/*
+ * File: UserRegisterDto.cs
+ * Description: DTO for user registration requests containing personal and account information.
+ */
+
+namespace ColletteAPI.Models.Dtos
 {
+    /*
+     * Class: UserRegisterDto
+     * This class is used to encapsulate the data required for user registration requests.
+     */
     public class UserRegisterDto
     {
         public string NIC { get; set; }

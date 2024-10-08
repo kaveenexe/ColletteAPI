@@ -1,22 +1,41 @@
-﻿using ColletteAPI.Models.Dtos;
+﻿/*
+ * File: UsersController.cs
+ * Description: This controller handles user-related operations such as retrieving users by type, updating, deleting, and managing pending customers.
+ */
+
+using ColletteAPI.Models.Dtos;
 using ColletteAPI.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ColletteAPI.Controllers
 {
+    /*
+     * Controller: UsersController
+     * Handles user-related actions such as fetching users by type (Vendor, CSR, Customer), updating, deleting, and retrieving pending customers.
+     */
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService; // Inject IUserService instead of IUserRepository
 
+        /*
+         * Constructor: UsersController
+         * Initializes a new instance of the UsersController class.
+         * 
+         * Parameters:
+         *  - userService: The IUserService to interact with user-related data.
+         */
         public UsersController(IUserService userService) // Inject IUserService
         {
             _userService = userService;
         }
 
-        // Get all vendors
+        /*
+         * Method: GetVendors
+         * Retrieves all users with the type "Vendor".
+         */
         [HttpGet("vendors")]
         public async Task<IActionResult> GetVendors()
         {
@@ -24,7 +43,10 @@ namespace ColletteAPI.Controllers
             return Ok(vendors);
         }
 
-        // Get all CSRs
+        /*
+         * Method: GetCSRs
+         * Retrieves all users with the type "CSR".
+         */
         [HttpGet("csrs")]
         public async Task<IActionResult> GetCSRs()
         {
@@ -32,7 +54,10 @@ namespace ColletteAPI.Controllers
             return Ok(csrs);
         }
 
-        // Get all customers
+        /*
+         * Method: GetCustomers
+         * Retrieves all users with the type "Customer".
+         */
         [HttpGet("customers")]
         public async Task<IActionResult> GetCustomers()
         {
@@ -40,6 +65,10 @@ namespace ColletteAPI.Controllers
             return Ok(customers);
         }
 
+        /*
+         * Method: GetUserById
+         * Retrieves a user by their unique ID.
+         */
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(string id)
         {
@@ -51,7 +80,15 @@ namespace ColletteAPI.Controllers
 
             return Ok(user);
         }
-        // Update user (Vendor, CSR, Customer)
+
+        /*
+         * Method: UpdateUser
+         * Updates user details (Vendor, CSR, Customer) by their ID.
+         * 
+         * Parameters:
+         *  - id: The ID of the user to update.
+         *  - updateDto: The data transfer object containing the updated user details.
+         */
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UserUpdateDto updateDto)
         {
@@ -71,8 +108,13 @@ namespace ColletteAPI.Controllers
             }
         }
 
-
-        // Delete user (Vendor, CSR, Customer)
+        /*
+         * Method: DeleteUser
+         * Deletes a user by their ID (Vendor, CSR, Customer).
+         * 
+         * Parameters:
+         *  - id: The ID of the user to delete.
+         */
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
@@ -86,7 +128,11 @@ namespace ColletteAPI.Controllers
                 return NotFound(ex.Message);
             }
         }
-        // Get all pending customers
+
+        /*
+         * Method: GetPendingCustomers
+         * Retrieves all customers whose accounts are not yet active (pending customers).
+         */
         [HttpGet("pending-customers")]
         public async Task<IActionResult> GetPendingCustomers()
         {
