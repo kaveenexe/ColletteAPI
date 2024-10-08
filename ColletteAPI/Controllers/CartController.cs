@@ -24,11 +24,16 @@ namespace ColletteAPI.Controllers
         }
 
         [HttpPost("{userId}/items")]
-        public async Task<ActionResult> AddToCart(string userId, [FromBody] CartItem item)
+        public async Task<IActionResult> AddToCart(string userId, [FromBody] CartItem item)
         {
-            if (!ModelState.IsValid)
+            if (string.IsNullOrEmpty(userId))
             {
-                return BadRequest(ModelState);
+                return BadRequest("User ID is required");
+            }
+
+            if (item.Quantity <= 0)
+            {
+                return BadRequest("Quantity must be greater than 0");
             }
 
             await _cartRepository.AddToCartAsync(userId, item);
