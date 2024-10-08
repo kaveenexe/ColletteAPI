@@ -1,4 +1,5 @@
 ﻿using ColletteAPI.Models;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Threading.Tasks;
 
@@ -21,24 +22,50 @@ namespace ColletteAPI.Repositories
                 ?? new Cart { UserId = userId };
         }
 
-        public async Task AddToCartAsync(string userId, CartItem item)
+        public async Task AddToCartAsync(string userId, CartItem newItem)
         {
-            var cart = await GetCartAsync(userId);
-            var existingItem = cart.Items.Find(i => i.ProductId == item.ProductId);
+            var filter = Builders<Cart>.Filter.Eq(c => c.UserId, userId);
+            var cart = await _carts.Find(filter).FirstOrDefaultAsync();
 
-            if (existingItem != null)
+            if (cart == null)
             {
-                existingItem.Quantity += item.Quantity;
+                // Create a new cart if it doesn't exist
+                cart = new Cart
+                {
+                    Id = ObjectId.GenerateNewId().ToString(),
+                    UserId = userId,
+                    Items = new List<CartItem> { newItem },
+                    TotalPrice = newItem.Price * newItem.Quantity
+                };
+                await _carts.InsertOneAsync(cart);
             }
             else
             {
-                cart.Items.Add(item);
+                // Update existing cart
+                var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == newItem.ProductId);
+                if (existingItem != null)
+                {
+                    // Update quantity of existing item
+                    existingItem.Quantity += newItem.Quantity;
+                }
+                else
+                {
+                    // Add new item to the cart
+                    cart.Items.Add(newItem);
+                }
+
+                // Recalculate total price
+                cart.TotalPrice = cart.Items.Sum(i => i.Price * i.Quantity);
+
+                // Update the cart in the database
+                var update = Builders<Cart>.Update
+                    .Set(c => c.Items, cart.Items)
+                    .Set(c => c.TotalPrice, cart.TotalPrice);
+
+                await _carts.UpdateOneAsync(filter, update);
             }
-
-            cart.TotalPrice = cart.Items.Sum(i => i.Price * i.Quantity);
-
-            await _carts.ReplaceOneAsync(c => c.UserId == userId, cart, new ReplaceOptions { IsUpsert = true });
         }
+
 
         public async Task RemoveFromCartAsync(string userId, string productId)
         {
