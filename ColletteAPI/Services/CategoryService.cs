@@ -23,7 +23,7 @@ namespace ColletteAPI.Services
             {
                 Id = c.Id,
                 Name = c.Name,
-                Description = c.Description 
+                Description = c.Description
             });
         }
 
@@ -55,7 +55,6 @@ namespace ColletteAPI.Services
                 Id = newCategory.Id,
                 Name = newCategory.Name,
                 Description = newCategory.Description
-                
             };
         }
 
@@ -65,6 +64,7 @@ namespace ColletteAPI.Services
             if (category == null) return null;
 
             category.Name = categoryDto.Name;
+            category.Description = categoryDto.Description;
 
             var updatedCategory = await _categoryRepository.UpdateAsync(category);
 
