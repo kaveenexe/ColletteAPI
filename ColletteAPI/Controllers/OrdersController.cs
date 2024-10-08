@@ -1,23 +1,47 @@
+/*
+ * File: OrdersController.cs
+ * Description: This controller handles order-related operations such as creating, retrieving, updating, and deleting orders.
+ */
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ColletteAPI.Services;
 using ColletteAPI.Models.Dtos;
 using System.Threading.Tasks;
+using System.Linq; // Make sure to include this for 'Any()'
 
 namespace ColletteAPI.Controllers
 {
+    /*
+     * Controller: OrdersController
+     * Handles order-related actions such as creating orders by admin or customer, retrieving orders, updating order statuses,
+     * canceling orders, and managing delivery statuses.
+     */
     [Route("api/[controller]")]
     [ApiController]
     public class OrdersController : ControllerBase
     {
-        private readonly IOrderService _orderService;
+        private readonly IOrderService _orderService; // Inject IOrderService to interact with order-related data
 
+        /*
+         * Constructor: OrdersController
+         * Initializes a new instance of the OrdersController class.
+         * 
+         * Parameters:
+         *  - orderService: The IOrderService to interact with order-related data.
+         */
         public OrdersController(IOrderService orderService)
         {
             _orderService = orderService;
         }
 
-        // Creates a new order by admin.
+        /*
+         * Method: CreateOrderByAdmin
+         * Creates a new order by admin.
+         * 
+         * Parameters:
+         *  - orderDto: The data transfer object containing the order details.
+         */
         [HttpPost("Admin")]
         public async Task<IActionResult> CreateOrderByAdmin([FromBody] OrderCreateDto orderDto)
         {
@@ -38,7 +62,13 @@ namespace ColletteAPI.Controllers
             return CreatedAtAction(nameof(GetOrderById), new { id = result.Id }, result);
         }
 
-        // Creates a new order by customer.
+        /*
+         * Method: CreateOrderByCustomer
+         * Creates a new order by customer.
+         * 
+         * Parameters:
+         *  - orderDto: The data transfer object containing the order details.
+         */
         [HttpPost("Customer")]
         public async Task<IActionResult> CreateOrderByCustomer([FromBody] OrderCreateDto orderDto)
         {
@@ -59,7 +89,10 @@ namespace ColletteAPI.Controllers
             return CreatedAtAction(nameof(GetOrderById), new { id = result.Id }, result);
         }
 
-        // Retrieves all orders.
+        /*
+         * Method: GetOrders
+         * Retrieves all orders.
+         */
         [HttpGet]
         public async Task<IActionResult> GetOrders()
         {
@@ -67,7 +100,13 @@ namespace ColletteAPI.Controllers
             return Ok(orders);
         }
 
-        // Retrieves an order by its ID.
+        /*
+         * Method: GetOrderById
+         * Retrieves an order by its ID.
+         * 
+         * Parameters:
+         *  - id: The ID of the order to retrieve.
+         */
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrderById(string id)
         {
@@ -80,7 +119,13 @@ namespace ColletteAPI.Controllers
             return Ok(order);
         }
 
-        // Retrieves orders by customer ID.
+        /*
+         * Method: GetOrdersByCustomerId
+         * Retrieves orders by customer ID.
+         * 
+         * Parameters:
+         *  - customerId: The ID of the customer whose orders to retrieve.
+         */
         [HttpGet("customer/{customerId}")]
         public async Task<IActionResult> GetOrdersByCustomerId(string customerId)
         {
@@ -93,20 +138,14 @@ namespace ColletteAPI.Controllers
             return Ok(orders);
         }
 
-        // Retrieves an order by customer ID and order ID.
-        [HttpGet("customer/{customerId}/order/{orderId}")]
-        public async Task<IActionResult> GetOrderByCustomerIdAndOrderId(string customerId, string orderId)
-        {
-            var order = await _orderService.GetOrderByCustomerIdAndOrderId(customerId, orderId);
-            if (order == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(order);
-        }
-
-        // Updates the status of an existing order.
+        /*
+         * Method: UpdateOrder
+         * Updates the status of an existing order.
+         * 
+         * Parameters:
+         *  - id: The ID of the order to update.
+         *  - orderDto: The data transfer object containing the updated order status.
+         */
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateOrder(string id, [FromBody] OrderUpdateDto orderDto)
         {
@@ -123,7 +162,13 @@ namespace ColletteAPI.Controllers
             return NoContent();
         }
 
-        // Deletes an order by its ID.
+        /*
+         * Method: DeleteOrder
+         * Deletes an order by its ID.
+         * 
+         * Parameters:
+         *  - id: The ID of the order to delete.
+         */
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteOrder(string id)
         {
@@ -135,7 +180,13 @@ namespace ColletteAPI.Controllers
             return NoContent();
         }
 
-        // Order cancellation request
+        /*
+         * Method: RequestOrderCancellation
+         * Submits a cancellation request for an existing order.
+         * 
+         * Parameters:
+         *  - cancellationDto: The data transfer object containing cancellation details.
+         */
         [HttpPost("request-cancel")]
         public async Task<IActionResult> RequestOrderCancellation([FromBody] OrderCancellationDto cancellationDto)
         {
@@ -154,7 +205,14 @@ namespace ColletteAPI.Controllers
             return NotFound(new { Message = "Order not found or already cancelled." });
         }
 
-        // Cancels an existing order.
+        /*
+         * Method: CancelOrder
+         * Cancels an existing order.
+         * 
+         * Parameters:
+         *  - id: The ID of the order to cancel.
+         *  - cancellationDto: The data transfer object containing cancellation details.
+         */
         [HttpPost("{id}/cancel")]
         public async Task<IActionResult> CancelOrder(string id, [FromBody] OrderCancellationDto cancellationDto)
         {
@@ -178,7 +236,13 @@ namespace ColletteAPI.Controllers
             return Ok(new { message = "Order cancelled successfully." });
         }
 
-        // Retrieves the status of an order.
+        /*
+         * Method: GetOrderStatus
+         * Retrieves the status of an order.
+         * 
+         * Parameters:
+         *  - id: The ID of the order whose status to retrieve.
+         */
         [HttpGet("{id}/status")]
         public async Task<IActionResult> GetOrderStatus(string id)
         {
@@ -191,7 +255,10 @@ namespace ColletteAPI.Controllers
             return Ok(status);
         }
 
-        // Get all pending cancellation requests
+        /*
+         * Method: GetPendingCancellationRequests
+         * Retrieves all pending cancellation requests.
+         */
         [HttpGet("pending-cancellations")]
         public async Task<IActionResult> GetPendingCancellationRequests()
         {
@@ -212,7 +279,14 @@ namespace ColletteAPI.Controllers
             }
         }
 
-        // Vendor to mark products as delivered
+        /*
+         * Method: MarkProductAsDelivered
+         * Marks a product within an order as delivered.
+         * 
+         * Parameters:
+         *  - orderId: The ID of the order containing the product.
+         *  - vendorId: The ID of the vendor marking the product as delivered.
+         */
         [HttpPut("{orderId}/vendors/{vendorId}/mark-delivered")]
         public async Task<IActionResult> MarkProductAsDelivered(string orderId, string vendorId)
         {
@@ -225,50 +299,23 @@ namespace ColletteAPI.Controllers
             return Ok(new { message = "Product marked as delivered successfully." });
         }
 
-        // CSR/Admin to mark entire order as delivered
+        /*
+         * Method: MarkOrderAsDeliveredByAdmin
+         * Marks an entire order as delivered by an admin.
+         * 
+         * Parameters:
+         *  - orderId: The ID of the order to mark as delivered.
+         */
         [HttpPost("{orderId}/mark-delivered")]
         public async Task<IActionResult> MarkOrderAsDeliveredByAdmin(string orderId)
         {
             bool result = await _orderService.MarkOrderAsDeliveredByAdmin(orderId);
             if (!result)
             {
-                return NotFound(new { message = "Order not found or already delivered." });
+                return NotFound(new { message = "Order not found." });
             }
 
             return Ok(new { message = "Order marked as delivered successfully." });
-        }
-
-        // Get order items by vendorId (Vendor-Specific)
-        [HttpGet("vendor/{orderId}/{vendorId}")]
-        public async Task<IActionResult> GetOrderByVendorId(string orderId, string vendorId)
-        {
-            var orderDto = await _orderService.GetOrderByVendorId(orderId, vendorId);
-
-            if (orderDto == null)
-            {
-                return NotFound(new { message = "Order not found or no items for the specified vendor." });
-            }
-
-            return Ok(orderDto);
-        }
-
-        // Get all orders by vendorId (Vendor-Specific)
-        [HttpGet("vendor/{vendorId}")]
-        public async Task<IActionResult> GetOrdersByVendorId(string vendorId)
-        {
-            if (string.IsNullOrEmpty(vendorId))
-            {
-                return BadRequest(new { message = "Vendor ID cannot be null or empty." });
-            }
-
-            var orders = await _orderService.GetOrdersByVendorId(vendorId);
-
-            if (orders == null || !orders.Any())
-            {
-                return NotFound(new { message = "No orders found for the specified vendor." });
-            }
-
-            return Ok(orders);
         }
     }
 }
