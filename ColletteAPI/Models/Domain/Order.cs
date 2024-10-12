@@ -27,7 +27,7 @@ namespace ColletteAPI.Models.Domain
     }
 
     // Enumeration for defining different payment methods.
-    public enum PaymentMethod // Changed to singular for consistency
+    public enum PaymentMethods // Changed to singular for consistency
     {
         Visa,
         Master,
@@ -59,7 +59,7 @@ namespace ColletteAPI.Models.Domain
 
         [BsonElement("PaymentMethod")]
         [BsonRepresentation(BsonType.String)]
-        public PaymentMethod? PaymentMethod { get; set; } // Method of payment chosen by the customer.
+        public PaymentMethods? PaymentMethod { get; set; } // Method of payment chosen by the customer.
 
         [BsonElement("Status")]
         [BsonRepresentation(BsonType.String)]
