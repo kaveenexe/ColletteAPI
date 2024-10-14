@@ -25,7 +25,7 @@ namespace ColletteAPI.Repositories
         Task CreateAsync(Product product);
 
         // Updates an existing product.
-        Task UpdateAsync(string id, Product product)
+        Task UpdateAsync(string id, Product product);
 
         // Deletes a product.
         Task DeleteAsync(string id);
