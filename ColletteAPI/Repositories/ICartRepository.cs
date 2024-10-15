@@ -26,5 +26,8 @@ namespace ColletteAPI.Repositories
 
         // Clears all items from the user's cart.
         Task ClearCartAsync(string userId);
+
+        // Retrieves the cart for a specific user and cart id.
+        Task<Cart> GetCartByUserIdAndCartId(string userId, string cartId);
     }
 }
