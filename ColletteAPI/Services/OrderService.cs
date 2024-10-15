@@ -245,6 +245,7 @@ namespace ColletteAPI.Services
         }
 
         // Create order by customer
+        // Create order by customer
         public async Task<OrderDto> CreateOrderByCustomer(OrderCreateDto orderDto)
         {
             var customer = await _userRepository.GetUserById(orderDto.CustomerId);
@@ -256,6 +257,7 @@ namespace ColletteAPI.Services
             string orderId = await GenerateUniqueOrderId();
 
             var orderItems = new List<OrderItem>();
+            decimal totalAmount = 0;
 
             foreach (var orderItemGroup in orderDto.OrderItemsGroups)
             {
@@ -267,17 +269,21 @@ namespace ColletteAPI.Services
                         throw new ValidationException($"Product with ID {item.ProductId} not found.");
                     }
 
-                    orderItems.Add(new OrderItem
+                    var orderItem = new OrderItem
                     {
                         ListItemId = orderItemGroup.ListItemId,
                         OrderId = orderId,
                         ProductId = item.ProductId,
                         ProductName = product.Name,
-                        VendorId= product.VendorId,
+                        VendorId = product.VendorId,
                         Quantity = item.Quantity,
                         Price = product.Price,
                         ProductStatus = ProductStatus.Purchased
-                    });
+                    };
+
+                    totalAmount += orderItem.Quantity * orderItem.Price;
+
+                    orderItems.Add(orderItem);
                 }
             }
 
@@ -304,7 +310,8 @@ namespace ColletteAPI.Services
                 OrderItems = orderItems,
                 CustomerId = orderDto.CustomerId,
                 CreatedByCustomer = true,
-                BillingDetails = billingDetails
+                BillingDetails = billingDetails,
+                TotalAmount = totalAmount
             };
 
             var createdOrder = await _orderRepository.CreateOrderByCustomer(order);
@@ -337,7 +344,8 @@ namespace ColletteAPI.Services
                     Email = createdOrder.BillingDetails.Email,
                     Phone = createdOrder.BillingDetails.Phone,
                     SingleBillingAddress = createdOrder.BillingDetails.SingleBillingAddress
-                } : null
+                } : null,
+                TotalAmount = totalAmount
             };
         }
 
