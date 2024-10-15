@@ -28,6 +28,13 @@ namespace ColletteAPI.Repositories
                 ?? new Cart { UserId = userId };
         }
 
+        // Retrieves the cart for a specific user and cart id.
+        public async Task<Cart> GetCartByUserIdAndCartId(string userId, string cartId)
+        {
+            return await _carts.Find(c => c.UserId == userId && c.Id == cartId).FirstOrDefaultAsync()
+                ?? new Cart { UserId = userId };
+        }
+
         // Adds an item to the user's cart.
         public async Task AddToCartAsync(string userId, CartItem newItem)
         {

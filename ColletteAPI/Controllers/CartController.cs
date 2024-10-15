@@ -31,6 +31,18 @@ namespace ColletteAPI.Controllers
             return Ok(cart);
         }
 
+        // Retrieves the cart for a specific user and cart id.
+        [HttpGet("{userId}/{cartId}")]
+        public async Task<ActionResult<Cart>> GetCart(string userId, string cartId)
+        {
+            var cart = await _cartRepository.GetCartByUserIdAndCartId(userId, cartId);
+            if (cart == null)
+            {
+                return NotFound("Cart not found for the provided user and cart ID.");
+            }
+            return Ok(cart);
+        }
+
         // Adds an item to the user's cart.
         [HttpPost("{userId}/items")]
         public async Task<IActionResult> AddToCart(string userId, [FromBody] CartItem item)
