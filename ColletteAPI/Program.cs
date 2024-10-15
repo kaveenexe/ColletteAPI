@@ -49,6 +49,9 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 // Register ICategoryRepository
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
+
+builder.Services.AddSingleton<CloudinaryService>();
+
 // Register IInventoryService
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 
@@ -60,6 +63,7 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 
 // Register ICommentRepository
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+
 
 
 // Add CORS services
