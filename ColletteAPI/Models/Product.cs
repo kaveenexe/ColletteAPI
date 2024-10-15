@@ -4,8 +4,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ColletteAPI.Models
 {
-
-    //Defining Products Model
     public class Product
     {
         [BsonId]
@@ -43,5 +41,8 @@ namespace ColletteAPI.Models
         [BsonRepresentation(BsonType.String)]
         [Required]
         public ProductCategory Category { get; set; }
+
+        [BsonElement("ImageUrl")]
+        public string? ImageUrl { get; set; }
     }
 }

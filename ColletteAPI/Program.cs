@@ -44,6 +44,8 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 // Register ICategoryRepository
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
+builder.Services.AddSingleton<CloudinaryService>();
+
 
 // Add CORS services
 builder.Services.AddCors(options =>
