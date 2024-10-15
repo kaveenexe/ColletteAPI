@@ -21,5 +21,23 @@ namespace ColletteAPI.Controllers
             var notifications = await _notificationRepository.GetNotificationsForCSR();
             return Ok(notifications);
         }
+
+        [HttpGet("admin")]
+        public async Task<IActionResult> GetNotificationsForAdmin()
+        {
+            var notifications = await _notificationRepository.GetNotificationsForAdmin();
+            return Ok(notifications);
+        }
+
+        [HttpGet("resolved/{customerId}")]
+        public async Task<IActionResult> GetResolvedNotificationsByCustomerId(string customerId)
+        {
+            var notifications = await _notificationRepository.GetResolvedNotificationsByCustomerId(customerId);
+            if (notifications == null || !notifications.Any())
+            {
+                return NotFound(new { message = "No resolved notifications found for this customer." });
+            }
+            return Ok(notifications);
+        }
     }
 }

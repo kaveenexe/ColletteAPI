@@ -15,6 +15,7 @@ namespace ColletteAPI.Services
         Task<bool> DeleteOrder(string id);
         Task<bool> RequestOrderCancellation(OrderCancellationDto cancellationDto);
         Task<bool> CancelOrder(OrderCancellationDto cancellationDto);
+        Task<bool> RejectCancelOrder(Order order, string statusReason);
         Task<string> GetOrderStatus(string id);
         Task<List<OrderDto>> GetPendingCancellationRequests();
         Task<bool> MarkProductAsDelivered(string orderId, string vendorId);

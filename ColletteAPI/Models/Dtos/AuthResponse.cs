@@ -1,5 +1,14 @@
-﻿namespace ColletteAPI.Models.Dtos
+﻿/*
+ * File: AuthResponse.cs
+ * Description: Defines the response object returned after a successful authentication (login).
+ */
+
+namespace ColletteAPI.Models.Dtos
 {
+    /*
+     * Class: AuthResponse
+     * This class represents the response data returned to the client after successful user authentication.
+     */
     public class AuthResponse
     {
         public string Token { get; set; }
