@@ -85,7 +85,7 @@ namespace ColletteAPI.Repositories
          */
         public async Task<Order> GetOrderByCustomerIdAndOrderId(string customerId, string orderId)
         {
-            return await _orders.Find(order => order.CustomerId == customerId && order.OrderId == orderId).FirstOrDefaultAsync();
+            return await _orders.Find(order => order.CustomerId == customerId && order.Id == orderId).FirstOrDefaultAsync();
         }
 
         /*
