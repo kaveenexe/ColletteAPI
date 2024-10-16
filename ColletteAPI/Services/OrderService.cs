@@ -245,7 +245,6 @@ namespace ColletteAPI.Services
         }
 
         // Create order by customer
-        // Create order by customer
         public async Task<OrderDto> CreateOrderByCustomer(OrderCreateDto orderDto)
         {
             var customer = await _userRepository.GetUserById(orderDto.CustomerId);

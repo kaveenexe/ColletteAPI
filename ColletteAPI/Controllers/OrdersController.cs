@@ -120,6 +120,26 @@ namespace ColletteAPI.Controllers
         }
 
         /*
+         * Method: GetOrderByCustomerIdAndOrderId
+         * Retrieves a specific order by customer ID and order ID.
+         * 
+         * Parameters:
+         *  - customerId: The ID of the customer whose order to retrieve.
+         *  - orderId: The ID of the order to retrieve.
+         */
+        [HttpGet("customer/{customerId}/order/{orderId}")]
+        public async Task<IActionResult> GetOrderByCustomerIdAndOrderId(string customerId, string orderId)
+        {
+            var order = await _orderService.GetOrderByCustomerIdAndOrderId(customerId, orderId);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(order);
+        }
+
+        /*
          * Method: GetOrdersByCustomerId
          * Retrieves orders by customer ID.
          * 
