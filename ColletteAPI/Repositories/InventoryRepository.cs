@@ -1,49 +1,36 @@
 ﻿// InventoryRepository.cs
-using MongoDB.Driver;
 using ColletteAPI.Models.Domain;
+using MongoDB.Driver;
+using System.Threading.Tasks;
 
 namespace ColletteAPI.Repositories
 {
+    // Implementation of inventory repository
     public class InventoryRepository : IInventoryRepository
     {
-        private readonly IMongoCollection<Inventory> _inventories;
+        private readonly IMongoCollection<Inventory> _inventoryCollection;
 
         public InventoryRepository(IMongoDatabase database)
         {
-            _inventories = database.GetCollection<Inventory>("Inventories");
+            _inventoryCollection = database.GetCollection<Inventory>("Inventories");
         }
 
-        // Fetch all inventories
-        public async Task<IEnumerable<Inventory>> GetAllInventoriesAsync()
-        {
-            return await _inventories.Find(inv => true).ToListAsync();
-        }
-
-        // Fetch inventory by ProductId
+        // Retrieves inventory based on productId
         public async Task<Inventory> GetInventoryByProductIdAsync(string productId)
         {
-            return await _inventories.Find(inv => inv.ProductId == productId).FirstOrDefaultAsync();
+            return await _inventoryCollection.Find(i => i.ProductId == productId).FirstOrDefaultAsync();
         }
 
-        // Add new inventory entry
-        public async Task<Inventory> AddInventoryAsync(Inventory inventory)
+        // Adds a new inventory item
+        public async Task CreateInventoryAsync(Inventory inventory)
         {
-            await _inventories.InsertOneAsync(inventory);
-            return inventory;
+            await _inventoryCollection.InsertOneAsync(inventory);
         }
 
-        // Update existing inventory entry
-        public async Task<bool> UpdateInventoryAsync(Inventory inventory)
+        // Updates existing inventory item
+        public async Task UpdateInventoryAsync(Inventory inventory)
         {
-            var result = await _inventories.ReplaceOneAsync(inv => inv.Id == inventory.Id, inventory);
-            return result.ModifiedCount > 0;
-        }
-
-        // Delete inventory entry
-        public async Task<bool> DeleteInventoryAsync(string id)
-        {
-            var result = await _inventories.DeleteOneAsync(inv => inv.Id == id);
-            return result.DeletedCount > 0;
+            await _inventoryCollection.ReplaceOneAsync(i => i.ProductId == inventory.ProductId, inventory);
         }
     }
 }

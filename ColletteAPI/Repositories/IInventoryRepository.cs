@@ -1,22 +1,14 @@
 ﻿// IInventoryRepository.cs
-// Interface for Inventory repository
-
 using ColletteAPI.Models.Domain;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ColletteAPI.Repositories
 {
-    using ColletteAPI.Models.Domain;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
+    // Interface for inventory repository methods
     public interface IInventoryRepository
     {
-        Task<IEnumerable<Inventory>> GetAllInventoriesAsync();
-        Task<Inventory> GetInventoryByProductIdAsync(string productId);
-        Task<Inventory> AddInventoryAsync(Inventory inventory);
-        Task<bool> UpdateInventoryAsync(Inventory inventory);
-        Task<bool> DeleteInventoryAsync(string id);
+        Task<Inventory> GetInventoryByProductIdAsync(string productId);  // Retrieve inventory by ProductId
+        Task CreateInventoryAsync(Inventory inventory);  // Add a new inventory item
+        Task UpdateInventoryAsync(Inventory inventory);  // Update an inventory item
     }
 }
