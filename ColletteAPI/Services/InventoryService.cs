@@ -1,16 +1,16 @@
 ﻿// InventoryService.cs
-// Implements business logic for inventory management.
-
-using ColletteAPI.Repositories;
 using ColletteAPI.Models.Domain;
-using ColletteAPI.Models.Dtos;
+using ColletteAPI.Repositories;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ColletteAPI.Services
 {
+    // Implementation of inventory service
     public class InventoryService : IInventoryService
     {
         private readonly IInventoryRepository _inventoryRepository;
-        private readonly IProductRepository _productRepository; // Assuming ProductRepository is injected
+        private readonly IProductRepository _productRepository;  // Using ProductRepository
 
         public InventoryService(IInventoryRepository inventoryRepository, IProductRepository productRepository)
         {
@@ -18,45 +18,34 @@ namespace ColletteAPI.Services
             _productRepository = productRepository;
         }
 
-        // Fetch all inventories and include product names
-        public async Task<IEnumerable<InventoryDto>> GetAllInventoriesAsync()
+        // Syncs all products to inventories
+        public async Task SyncProductsToInventoryAsync()
         {
-            var inventories = await _inventoryRepository.GetAllInventoriesAsync();
-            var inventoryDtos = new List<InventoryDto>();
+            // Retrieve all products from the ProductRepository
+            var products = await _productRepository.GetAllProductsAsync();
 
-            foreach (var inventory in inventories)
+            foreach (var product in products)
             {
-                var product = await _productRepository.GetByIdAsync(inventory.ProductId); // Assumed method
-                if (product != null)
-                {
-                    inventoryDtos.Add(new InventoryDto
-                    {
-                        ProductName = product.Name,
-                        Quantity = inventory.Quantity
-                    });
-                }
-            }
+                // Check if the product already exists in the inventory
+                var inventoryItem = await _inventoryRepository.GetInventoryByProductIdAsync(product.UniqueProductId);
 
-            return inventoryDtos;
-        }
-
-        // Fetch inventory by product ID and include product name
-        public async Task<InventoryDto> GetInventoryByProductIdAsync(string productId)
-        {
-            var inventory = await _inventoryRepository.GetInventoryByProductIdAsync(productId);
-            if (inventory != null)
-            {
-                var product = await _productRepository.GetByIdAsync(productId); // Assumed method
-                if (product != null)
+                if (inventoryItem == null)
                 {
-                    return new InventoryDto
+                    // If not in inventory, create a new inventory entry for the product
+                    var newInventory = new Inventory
                     {
-                        ProductName = product.Name,
-                        Quantity = inventory.Quantity
+                        ProductId = product.UniqueProductId,
+                        StockQuantity = product.StockQuantity // Initialize quantity based on the product
                     };
+                    await _inventoryRepository.CreateInventoryAsync(newInventory);
+                }
+                else
+                {
+                    // If the product exists in inventory, update the quantity
+                    inventoryItem.StockQuantity = product.StockQuantity;
+                    await _inventoryRepository.UpdateInventoryAsync(inventoryItem);
                 }
             }
-            return null;
         }
     }
 }

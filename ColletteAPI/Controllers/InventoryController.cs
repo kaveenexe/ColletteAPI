@@ -1,9 +1,7 @@
 ﻿// InventoryController.cs
-// Handles HTTP requests for inventory management.
-
-using Microsoft.AspNetCore.Mvc;
 using ColletteAPI.Services;
-using ColletteAPI.Models.Dtos;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace ColletteAPI.Controllers
 {
@@ -18,24 +16,12 @@ namespace ColletteAPI.Controllers
             _inventoryService = inventoryService;
         }
 
-        // GET: api/inventory
-        [HttpGet]
-        public async Task<IActionResult> GetAllInventories()
+        // Sync products to inventory (Add/Update)
+        [HttpPost("sync")]
+        public async Task<IActionResult> SyncProductsToInventory()
         {
-            var inventories = await _inventoryService.GetAllInventoriesAsync();
-            return Ok(inventories);
-        }
-
-        // GET: api/inventory/{productId}
-        [HttpGet("{productId}")]
-        public async Task<IActionResult> GetInventoryByProductId(string productId)
-        {
-            var inventory = await _inventoryService.GetInventoryByProductIdAsync(productId);
-            if (inventory == null)
-            {
-                return NotFound();
-            }
-            return Ok(inventory);
+            await _inventoryService.SyncProductsToInventoryAsync();
+            return Ok("Products have been synced to the inventory.");
         }
     }
 }

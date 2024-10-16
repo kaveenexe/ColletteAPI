@@ -1,13 +1,11 @@
 ﻿// IInventoryService.cs
-// Interface for the Inventory service layer.
-
-using ColletteAPI.Models.Dtos;
+using System.Threading.Tasks;
 
 namespace ColletteAPI.Services
 {
+    // Interface for inventory service
     public interface IInventoryService
     {
-        Task<IEnumerable<InventoryDto>> GetAllInventoriesAsync();
-        Task<InventoryDto> GetInventoryByProductIdAsync(string productId);
+        Task SyncProductsToInventoryAsync();  // Sync all products to the inventory
     }
 }
