@@ -34,5 +34,24 @@ namespace ColletteAPI.Controllers
                 return StatusCode(500, "An error occurred while processing your request.");
             }
         }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Product>> GetProductDetails(string id)
+        {
+            try
+            {
+                var product = await _productRepository.GetProductByPId(id);
+                if (product == null)
+                {
+                    return NotFound($"Product with ID {id} not found.");
+                }
+                return Ok(product);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching product details for product ID: {ProductId}", id);
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
     }
 }

@@ -7,62 +7,145 @@ using System.Threading.Tasks;
 
 namespace ColletteAPI.Repositories
 {
+    /*
+     * Class: OrderRepository
+     * Implements the IOrderRepository interface for managing order-related data operations
+     * using MongoDB as the database backend.
+     */
     public class OrderRepository : IOrderRepository
     {
-        private readonly IMongoCollection<Order> _orders;
+        private readonly IMongoCollection<Order> _orders; // MongoDB collection for orders
 
+        /*
+         * Constructor: OrderRepository
+         * Initializes a new instance of the OrderRepository class.
+         * 
+         * Parameters:
+         *  - client: The MongoDB client to connect to the database.
+         *  - configuration: Configuration settings for database access.
+         */
         public OrderRepository(IMongoClient client, IConfiguration configuration)
         {
             var database = client.GetDatabase(configuration.GetSection("MongoDB:DatabaseName").Value);
-            _orders = database.GetCollection<Order>("Orders");
+            _orders = database.GetCollection<Order>("Orders"); // Set the orders collection
         }
 
-        // Get all orders
+        /*
+         * Method: GetAllOrders
+         * Retrieves all orders from the database.
+         * 
+         * Returns:
+         *  - A list of all orders.
+         */
         public async Task<IEnumerable<Order>> GetAllOrders()
         {
             return await _orders.Find(order => true).ToListAsync();
         }
 
-        // Get order by ID
+        /*
+         * Method: GetOrderById
+         * Retrieves an order by its ID.
+         * 
+         * Parameters:
+         *  - id: The ID of the order to retrieve.
+         * 
+         * Returns:
+         *  - The order object, or null if not found.
+         */
         public async Task<Order> GetOrderById(string id)
         {
             return await _orders.Find(order => order.Id == id).FirstOrDefaultAsync();
         }
 
-        // Get order by customerId
+        /*
+         * Method: GetOrdersByCustomerId
+         * Retrieves all orders associated with a specific customer ID.
+         * 
+         * Parameters:
+         *  - customerId: The ID of the customer whose orders to retrieve.
+         * 
+         * Returns:
+         *  - A list of orders belonging to the specified customer.
+         */
         public async Task<IEnumerable<Order>> GetOrdersByCustomerId(string customerId)
         {
             return await _orders.Find(o => o.CustomerId == customerId).ToListAsync();
         }
 
-        // Get order by customerId and orderId
+        /*
+         * Method: GetOrderByCustomerIdAndOrderId
+         * Retrieves an order by its customer ID and order ID.
+         * 
+         * Parameters:
+         *  - customerId: The ID of the customer.
+         *  - orderId: The ID of the order to retrieve.
+         * 
+         * Returns:
+         *  - The order object, or null if not found.
+         */
         public async Task<Order> GetOrderByCustomerIdAndOrderId(string customerId, string orderId)
         {
-            return await _orders.Find(order => order.CustomerId == customerId && order.OrderId == orderId).FirstOrDefaultAsync();
+            return await _orders.Find(order => order.CustomerId == customerId && order.Id == orderId).FirstOrDefaultAsync();
         }
 
-        // Create order by customer
+        /*
+         * Method: CreateOrderByCustomer
+         * Inserts a new order created by a customer into the database.
+         * 
+         * Parameters:
+         *  - order: The order object to create.
+         * 
+         * Returns:
+         *  - The created order object.
+         */
         public async Task<Order> CreateOrderByCustomer(Order order)
         {
-            await _orders.InsertOneAsync(order);
+            await _orders.InsertOneAsync(order); // Insert the order
             return order;
         }
 
-        // Create order by admin
+        /*
+         * Method: CreateOrderByAdmin
+         * Inserts a new order created by an admin into the database.
+         * 
+         * Parameters:
+         *  - order: The order object to create.
+         * 
+         * Returns:
+         *  - The created order object.
+         */
         public async Task<Order> CreateOrderByAdmin(Order order)
         {
-            await _orders.InsertOneAsync(order);
+            await _orders.InsertOneAsync(order); // Insert the order
             return order;
         }
 
-        // Check if the order is exists
+        /*
+         * Method: OrderExists
+         * Checks if an order exists in the database by its order ID.
+         * 
+         * Parameters:
+         *  - orderId: The ID of the order to check.
+         * 
+         * Returns:
+         *  - True if the order exists; otherwise, false.
+         */
         public async Task<bool> OrderExists(string orderId)
         {
             var order = await _orders.Find(o => o.OrderId == orderId).FirstOrDefaultAsync();
-            return order != null;
+            return order != null; // Return true if order exists
         }
 
-        // Update order
+        /*
+         * Method: UpdateOrder
+         * Updates an existing order's details in the database.
+         * 
+         * Parameters:
+         *  - order: The order object containing updated data.
+         * 
+         * Returns:
+         *  - True if the update was successful; otherwise, false.
+         */
         public async Task<bool> UpdateOrder(Order order)
         {
             var updateDefinition = Builders<Order>.Update
@@ -76,32 +159,60 @@ namespace ColletteAPI.Repositories
                 updateDefinition
             );
 
-            return result.IsAcknowledged && result.ModifiedCount > 0;
+            return result.IsAcknowledged && result.ModifiedCount > 0; // Return true if update was acknowledged
         }
 
-        // Delete order
+        /*
+         * Method: DeleteOrder
+         * Deletes an order from the database by its ID.
+         * 
+         * Parameters:
+         *  - id: The ID of the order to delete.
+         * 
+         * Returns:
+         *  - True if the deletion was successful; otherwise, false.
+         */
         public async Task<bool> DeleteOrder(string id)
         {
             var result = await _orders.DeleteOneAsync(o => o.Id == id);
-            return result.IsAcknowledged && result.DeletedCount > 0;
+            return result.IsAcknowledged && result.DeletedCount > 0; // Return true if deletion was acknowledged
         }
 
-        // Update order status
+        /*
+         * Method: UpdateOrderStatus
+         * Updates the status of an existing order.
+         * 
+         * Parameters:
+         *  - id: The ID of the order to update.
+         *  - status: The new status to set for the order.
+         * 
+         * Returns:
+         *  - True if the update was successful; otherwise, false.
+         */
         public async Task<bool> UpdateOrderStatus(string id, OrderStatus status)
         {
             var updateDefinition = Builders<Order>.Update.Set(o => o.Status, status);
             var result = await _orders.UpdateOneAsync(o => o.Id == id, updateDefinition);
-            return result.IsAcknowledged && result.ModifiedCount > 0;
+            return result.IsAcknowledged && result.ModifiedCount > 0; // Return true if update was acknowledged
         }
 
-        // Request Order Cancellation
+        /*
+         * Method: RequestOrderCancellation
+         * Submits a request to cancel an existing order.
+         * 
+         * Parameters:
+         *  - cancellationDto: The data transfer object containing cancellation details.
+         * 
+         * Returns:
+         *  - True if the cancellation request was submitted successfully; otherwise, false.
+         */
         public async Task<bool> RequestOrderCancellation(OrderCancellationDto cancellationDto)
         {
             var order = await GetOrderById(cancellationDto.Id);
 
             if (order == null || order.Status == OrderStatus.Cancelled)
             {
-                return false;
+                return false; // Return false if order is not found or already cancelled
             }
 
             var cancellation = new OrderCancellation
@@ -118,16 +229,25 @@ namespace ColletteAPI.Repositories
 
             var result = await _orders.UpdateOneAsync(o => o.Id == order.Id, updateDefinition);
 
-            return result.IsAcknowledged && result.ModifiedCount > 0;
+            return result.IsAcknowledged && result.ModifiedCount > 0; // Return true if update was acknowledged
         }
 
-        // Cancel Order
+        /*
+         * Method: CancelOrder
+         * Cancels an existing order.
+         * 
+         * Parameters:
+         *  - id: The ID of the order to cancel.
+         * 
+         * Returns:
+         *  - True if the cancellation was successful; otherwise, false.
+         */
         public async Task<bool> CancelOrder(string id)
         {
             var order = await GetOrderById(id);
             if (order == null || order.Status == OrderStatus.Delivered || order.Status == OrderStatus.PartiallyDelivered)
             {
-                return false;
+                return false; // Return false if order is not found or already delivered
             }
 
             var cancellation = new OrderCancellation
@@ -136,7 +256,7 @@ namespace ColletteAPI.Repositories
                 OrderId = id,
                 CancellationApproved = true,
                 CancellationDate = DateTime.UtcNow,
-                CancelRequestStatus= CancelRequestStatus.Accepted
+                CancelRequestStatus = CancelRequestStatus.Accepted
             };
 
             var updateDefinition = Builders<Order>.Update
@@ -145,23 +265,50 @@ namespace ColletteAPI.Repositories
 
             var result = await _orders.UpdateOneAsync(o => o.Id == id, updateDefinition);
 
-            return result.IsAcknowledged && result.ModifiedCount > 0;
+            return result.IsAcknowledged && result.ModifiedCount > 0; // Return true if update was acknowledged
         }
 
-        // Get order status
+        /*
+         * Method: GetOrderStatus
+         * Retrieves the status of an order by its ID.
+         * 
+         * Parameters:
+         *  - id: The ID of the order whose status to retrieve.
+         * 
+         * Returns:
+         *  - The status of the order as a string, or "Order not found" if not found.
+         */
         public async Task<string> GetOrderStatus(string id)
         {
             var order = await GetOrderById(id);
-            return order?.Status.ToString() ?? "Order not found";
+            return order?.Status.ToString() ?? "Order not found"; // Return order status or not found message
         }
 
-        // Get order by status
+        /*
+         * Method: GetOrdersByStatus
+         * Retrieves all orders with a specific status.
+         * 
+         * Parameters:
+         *  - status: The status of orders to retrieve.
+         * 
+         * Returns:
+         *  - A list of orders matching the specified status.
+         */
         public async Task<List<Order>> GetOrdersByStatus(OrderStatus status)
         {
             return await _orders.Find(order => order.Status == status).ToListAsync();
         }
 
-        // Get orders by cancellation request status
+        /*
+         * Method: GetOrdersByCancelRequestStatus
+         * Retrieves all orders with a specific cancellation request status.
+         * 
+         * Parameters:
+         *  - cancelRequestStatus: The cancellation request status to filter by.
+         * 
+         * Returns:
+         *  - A list of orders with the specified cancellation request status.
+         */
         public async Task<List<Order>> GetOrdersByCancelRequestStatus(CancelRequestStatus cancelRequestStatus)
         {
             return await _orders
@@ -169,14 +316,24 @@ namespace ColletteAPI.Repositories
                 .ToListAsync();
         }
 
-        // Get order items by vendorId (Vendor-Specific)
+        /*
+         * Method: GetOrderByVendorId
+         * Retrieves an order by its ID, filtered by a specific vendor ID.
+         * 
+         * Parameters:
+         *  - orderId: The ID of the order to retrieve.
+         *  - vendorId: The ID of the vendor to filter the order items.
+         * 
+         * Returns:
+         *  - The order object with vendor-specific items, or null if not found.
+         */
         public async Task<Order> GetOrderByVendorId(string orderId, string vendorId)
         {
             var order = await _orders.Find(o => o.Id == orderId).FirstOrDefaultAsync();
 
             if (order == null)
             {
-                return null;
+                return null; // Return null if order is not found
             }
 
             var vendorSpecificItems = order.OrderItems
@@ -185,19 +342,28 @@ namespace ColletteAPI.Repositories
 
             if (!vendorSpecificItems.Any())
             {
-                return null;
+                return null; // Return null if no vendor-specific items found
             }
 
-            order.OrderItems = vendorSpecificItems;
+            order.OrderItems = vendorSpecificItems; // Set the order items to only include vendor-specific items
 
-            return order;
+            return order; // Return the filtered order
         }
 
-        // Get all orders by vendorId (Vendor-Specific)
+        /*
+         * Method: GetOrdersByVendorId
+         * Retrieves all orders that contain items from a specific vendor.
+         * 
+         * Parameters:
+         *  - vendorId: The ID of the vendor to filter orders by.
+         * 
+         * Returns:
+         *  - A list of orders containing items from the specified vendor.
+         */
         public async Task<List<Order>> GetOrdersByVendorId(string vendorId)
         {
             var orders = await _orders.Find(order => order.OrderItems.Any(item => item.VendorId == vendorId)).ToListAsync();
-            return orders;
+            return orders; // Return the list of filtered orders
         }
     }
 }
