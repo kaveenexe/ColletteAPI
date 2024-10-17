@@ -57,6 +57,7 @@ namespace ColletteAPI.Services
                     }
                     : null,
                 TotalAmount = o.TotalAmount,
+                CustomerId = o.CustomerId,
                 CreatedByCustomer = o.CreatedByCustomer,
                 CreatedByAdmin = o.CreatedByAdmin,
                 OrderItemsGroups = o.OrderItems.GroupBy(oi => oi.ListItemId)
@@ -112,6 +113,7 @@ namespace ColletteAPI.Services
                     }
                     : null,
                 TotalAmount = order.TotalAmount,
+                CustomerId = order.CustomerId,
                 CreatedByCustomer = order.CreatedByCustomer,
                 CreatedByAdmin = order.CreatedByAdmin,
                 OrderItemsGroups = order.OrderItems.GroupBy(oi => oi.ListItemId)
@@ -169,6 +171,7 @@ namespace ColletteAPI.Services
                     }
                     : null,
                 TotalAmount = o.TotalAmount,
+                CustomerId = o.CustomerId,
                 CreatedByCustomer = o.CreatedByCustomer,
                 CreatedByAdmin = o.CreatedByAdmin,
                 OrderItemsGroups = o.OrderItems.GroupBy(oi => oi.ListItemId)
@@ -225,6 +228,7 @@ namespace ColletteAPI.Services
                     }
                     : null,
                 TotalAmount = order.TotalAmount,
+                CustomerId = order.CustomerId,
                 CreatedByCustomer = order.CreatedByCustomer,
                 CreatedByAdmin = order.CreatedByAdmin,
                 OrderItemsGroups = order.OrderItems.GroupBy(oi => oi.ListItemId)
