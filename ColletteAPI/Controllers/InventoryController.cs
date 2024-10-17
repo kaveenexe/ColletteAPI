@@ -23,5 +23,13 @@ namespace ColletteAPI.Controllers
             await _inventoryService.SyncProductsToInventoryAsync();
             return Ok("Products have been synced to the inventory.");
         }
+
+        // Retrieves all products with their details (ProductId, Name, Quantity)
+        [HttpGet("products")]
+        public async Task<IActionResult> GetAllProducts()
+        {
+            var products = await _inventoryService.GetAllProductsAsync();
+            return Ok(products);
+        }
     }
 }

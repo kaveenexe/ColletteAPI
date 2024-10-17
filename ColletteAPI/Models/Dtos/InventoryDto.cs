@@ -8,5 +8,7 @@ namespace ColletteAPI.Models.Dtos
         public string ProductId { get; set; }  // Product associated with the inventory
         public string ProductName { get; set; }  // Name of the product
         public int StockQuantity { get; set; }  // Quantity available in stock
+
+        public string Category { get; set; }  // Product category
     }
 }

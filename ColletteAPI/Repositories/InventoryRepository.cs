@@ -32,5 +32,11 @@ namespace ColletteAPI.Repositories
         {
             await _inventoryCollection.ReplaceOneAsync(i => i.ProductId == inventory.ProductId, inventory);
         }
+
+        // Retrieves all inventory items
+        public async Task<IEnumerable<Inventory>> GetAllInventoriesAsync()
+        {
+            return await _inventoryCollection.Find(_ => true).ToListAsync();
+        }
     }
 }

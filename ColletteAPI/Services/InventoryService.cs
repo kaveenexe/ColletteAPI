@@ -1,5 +1,6 @@
 ﻿// InventoryService.cs
 using ColletteAPI.Models.Domain;
+using ColletteAPI.Models.Dtos;
 using ColletteAPI.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -46,6 +47,31 @@ namespace ColletteAPI.Services
                     await _inventoryRepository.UpdateInventoryAsync(inventoryItem);
                 }
             }
+        }
+
+        // Retrieves all products with product details (ProductId, Name, StockQuantity)
+        public async Task<IEnumerable<InventoryDto>> GetAllProductsAsync()
+        {
+            var inventories = await _inventoryRepository.GetAllInventoriesAsync();
+            var productDetails = new List<InventoryDto>();
+
+            foreach (var inventory in inventories)
+            {
+                // Fetch the product details using the ProductId from ProductRepository
+                var product = await _productRepository.GetProductById(inventory.ProductId);
+
+                // Add the product details along with the inventory stock quantity
+                productDetails.Add(new InventoryDto
+                {
+                    Id = inventory.Id,
+                    ProductId = product?.UniqueProductId,
+                    ProductName = product?.Name,
+                    StockQuantity = inventory.StockQuantity,  // Quantity from Inventory table
+                    Category = product?.Category.ToString()  // Assuming Category is an enum or string
+                });
+            }
+
+            return productDetails;
         }
     }
 }
