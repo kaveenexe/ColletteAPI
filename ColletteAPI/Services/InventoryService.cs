@@ -13,13 +13,15 @@ namespace ColletteAPI.Services
         private readonly IInventoryRepository _inventoryRepository;
         private readonly IProductRepository _productRepository;  // Using ProductRepository
         private readonly IOrderRepository _orderRepository; // Assuming you have an OrderRepository to handle orders
+        private readonly INotificationRepository _notificationRepository;
 
 
-        public InventoryService(IInventoryRepository inventoryRepository, IProductRepository productRepository, IOrderRepository orderRepository)
+        public InventoryService(IInventoryRepository inventoryRepository, IProductRepository productRepository, IOrderRepository orderRepository, INotificationRepository notificationRepository)
         {
             _inventoryRepository = inventoryRepository;
             _productRepository = productRepository;
             _orderRepository = orderRepository; // Injecting OrderRepository
+            _notificationRepository = notificationRepository;
 
         }
 
@@ -40,6 +42,7 @@ namespace ColletteAPI.Services
                     var newInventory = new Inventory
                     {
                         ProductId = product.UniqueProductId,
+                        VendorId = product.VendorId,
                         StockQuantity = product.StockQuantity // Initialize quantity based on the product
                     };
                     await _inventoryRepository.CreateInventoryAsync(newInventory);
@@ -67,12 +70,33 @@ namespace ColletteAPI.Services
                 // Fetch the product details using the ProductId from ProductRepository
                 var product = await _productRepository.GetProductById(inventory.ProductId);
 
+                // Check if the stock quantity is below 5 and notify the vendor
+                if (product.StockQuantity < 5)
+                {
+                    var lowStockMessage = $"Your product {product.Name} has low stock. Only {product.StockQuantity} items left.";
+
+                    // Create a notification for the vendor about low stock
+                    var notification = new Notification
+                    {
+                        Message = lowStockMessage,
+                        IsVisibleToCSR = false,
+                        IsVisibleToAdmin = false,
+                        IsVisibleToVendor = true,
+                        IsVisibleToCustomer = false,
+                        IsResolved = false,
+                        VendorId = product.VendorId  // Notify the vendor of the product
+                    };
+
+                    await _notificationRepository.AddNotification(notification);
+                }
+
                 // Add the product details along with the inventory stock quantity
                 productDetails.Add(new InventoryDto
                 {
                     Id = inventory.Id,
                     ProductId = product?.UniqueProductId,
                     ProductName = product?.Name,
+                    VendorId = product.VendorId,
                     StockQuantity = product.StockQuantity,  // Quantity from Inventory table
                     Category = product?.Category.ToString()  // Assuming Category is an enum or string
                 });

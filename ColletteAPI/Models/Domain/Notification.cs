@@ -17,5 +17,6 @@ namespace ColletteAPI.Models.Domain
         public bool IsResolved { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string? CustomerId { get; set; }
+        public string? VendorId { get; set; }
     }
 }

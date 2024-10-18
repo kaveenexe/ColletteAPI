@@ -14,6 +14,9 @@ namespace ColletteAPI.Models.Domain
         [BsonElement("productId")]
         public string ProductId { get; set; }  // Product associated with inventory
 
+        [BsonElement("vendorId")]
+        public string VendorId { get; set; }
+
         [BsonElement("Stock")]
         public int StockQuantity { get; set; }  // Quantity available in stock
 
