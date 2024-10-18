@@ -56,6 +56,9 @@ namespace ColletteAPI.Services
         // Retrieves all products with product details (ProductId, Name, StockQuantity)
         public async Task<IEnumerable<InventoryDto>> GetAllProductsAsync()
         {
+            // Sync products to inventory before fetching them
+            await SyncProductsToInventoryAsync();
+
             var inventories = await _inventoryRepository.GetAllInventoriesAsync();
             var productDetails = new List<InventoryDto>();
 
