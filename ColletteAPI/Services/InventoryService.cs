@@ -71,24 +71,34 @@ namespace ColletteAPI.Services
                 var product = await _productRepository.GetProductById(inventory.ProductId);
 
                 // Check if the stock quantity is below 5 and notify the vendor
-                if (product.StockQuantity < 5)
+                if (product != null)
                 {
-                    var lowStockMessage = $"Your product {product.Name} has low stock. Only {product.StockQuantity} items left.";
-
-                    // Create a notification for the vendor about low stock
-                    var notification = new Notification
+                    // Check if the stock quantity is below 5 and notify the vendor
+                    if (product.StockQuantity < 5)
                     {
-                        Message = lowStockMessage,
-                        IsVisibleToCSR = false,
-                        IsVisibleToAdmin = false,
-                        IsVisibleToVendor = true,
-                        IsVisibleToCustomer = false,
-                        IsResolved = false,
-                        VendorId = product.VendorId  // Notify the vendor of the product
-                    };
+                        var lowStockMessage = $"Your product {product.Name} has low stock. Only {product.StockQuantity} items left.";
 
-                    await _notificationRepository.AddNotification(notification);
+                        // Create a notification for the vendor about low stock
+                        var notification = new Notification
+                        {
+                            Message = lowStockMessage,
+                            IsVisibleToCSR = false,
+                            IsVisibleToAdmin = false,
+                            IsVisibleToVendor = true,
+                            IsVisibleToCustomer = false,
+                            IsResolved = false,
+                            VendorId = product.VendorId  // Notify the vendor of the product
+                        };
+
+                        await _notificationRepository.AddNotification(notification);
+                    }
                 }
+                else
+                {
+                    // Handle the case when product is null
+                    throw new ArgumentNullException(nameof(product), "Product cannot be null.");
+                }
+
 
                 // Add the product details along with the inventory stock quantity
                 productDetails.Add(new InventoryDto
