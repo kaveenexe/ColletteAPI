@@ -40,7 +40,7 @@ namespace ColletteAPI.Models
         [BsonElement("Category")]
         [BsonRepresentation(BsonType.String)]
         [Required]
-        public ProductCategory Category { get; set; }
+        public string Category { get; set; }
 
         [BsonElement("ImageUrl")]
         public string? ImageUrl { get; set; }
