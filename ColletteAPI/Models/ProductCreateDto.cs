@@ -22,7 +22,7 @@ namespace ColletteAPI.Models
         public bool IsActive { get; set; }
 
         [Required]
-        public ProductCategory Category { get; set; }
+        public string? Category { get; set; }
 
         public IFormFile? Image { get; set; }
     }

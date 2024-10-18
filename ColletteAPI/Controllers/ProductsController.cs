@@ -23,6 +23,7 @@ namespace ColletteAPI.Controllers
         private readonly IProductRepository _productRepository;
         private readonly ILogger<ProductsController> _logger;
         private readonly CloudinaryService _cloudinaryService;
+        private readonly ICategoryService _categoryService;
 
         public ProductsController(IProductRepository productRepository, ILogger<ProductsController> logger, CloudinaryService cloudinaryService)
         {
@@ -42,6 +43,8 @@ namespace ColletteAPI.Controllers
                 return BadRequest(ModelState);
             }
 
+            
+            
             var product = new Product
             {
                 UniqueProductId = productDto.UniqueProductId,
@@ -51,6 +54,7 @@ namespace ColletteAPI.Controllers
                 StockQuantity = productDto.StockQuantity,
                 VendorId = vendorId,
                 IsActive = productDto.IsActive,
+                //Category = productDto.Category
                 Category = productDto.Category
             };
 
