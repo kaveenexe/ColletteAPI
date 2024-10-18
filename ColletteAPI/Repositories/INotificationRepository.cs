@@ -1,4 +1,5 @@
 ﻿using ColletteAPI.Models.Domain;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -26,5 +27,7 @@ namespace ColletteAPI.Repositories
 
         // Update the notification
         Task UpdateNotification(string id, Notification notification);
+
+        Task<List<Notification>> GetNotificationsByVendorId(string vendorId);
     }
 }

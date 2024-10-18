@@ -39,5 +39,16 @@ namespace ColletteAPI.Controllers
             }
             return Ok(notifications);
         }
+
+        [HttpGet("{vendorId}")]
+        public async Task<IActionResult> GetNotificationsByVendorId(string vendorId)
+        {
+            var notifications = await _notificationRepository.GetNotificationsByVendorId(vendorId);
+            if (notifications == null || !notifications.Any())
+            {
+                return NotFound(new { message = "No notifications found for this vendor." });
+            }
+            return Ok(notifications);
+        }
     }
 }

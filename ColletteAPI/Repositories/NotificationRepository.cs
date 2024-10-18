@@ -57,5 +57,10 @@ namespace ColletteAPI.Repositories
             var objectId = ObjectId.Parse(id);
             await _notifications.DeleteOneAsync(n => n.NotificationId == objectId.ToString());
         }
+
+        public async Task<List<Notification>> GetNotificationsByVendorId(string vendorId)
+        {
+            return await _notifications.Find(n => n.VendorId == vendorId).ToListAsync();
+        }
     }
 }
