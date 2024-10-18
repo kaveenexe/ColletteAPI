@@ -365,5 +365,25 @@ namespace ColletteAPI.Repositories
             var orders = await _orders.Find(order => order.OrderItems.Any(item => item.VendorId == vendorId)).ToListAsync();
             return orders; // Return the list of filtered orders
         }
+
+                /*
+         * Method: GetOrdersByProductIdAsync
+         * Retrieves all orders that contain a specific product.
+         * 
+         * Parameters:
+         *  - productId: The ID of the product to filter orders by.
+         * 
+         * Returns:
+         *  - A list of orders containing the specified product.
+         * 
+         * Throws:
+         *  - ArgumentNullException: If the productId is null or empty.
+         *  - MongoException: If there is an issue retrieving orders from the database.
+         */
+        public async Task<List<Order>> GetOrdersByProductId(string productId)
+        {
+            var filter = Builders<Order>.Filter.ElemMatch(o => o.OrderItems, item => item.ProductId == productId);
+            return await _orders.Find(filter).ToListAsync();
+        }
     }
 }

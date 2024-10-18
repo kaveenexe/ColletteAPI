@@ -12,11 +12,14 @@ namespace ColletteAPI.Repositories
     public class ProductRepository : IProductRepository
     {
         private readonly IMongoCollection<Product> _products;
+        private readonly IInventoryRepository _inventoryRepository;  // Dependency on InventoryRepository
 
-        public ProductRepository(IMongoClient client, IConfiguration configuration)
+        public ProductRepository(IMongoClient client, IConfiguration configuration, IInventoryRepository inventoryRepository)
         {
             var database = client.GetDatabase(configuration.GetSection("MongoDB:DatabaseName").Value);
             _products = database.GetCollection<Product>("Products");
+            _inventoryRepository = inventoryRepository; // Injecting InventoryRepository
+
         }
 
         // Retrieves all products for a specific vendor.
@@ -72,5 +75,41 @@ namespace ColletteAPI.Repositories
         {
             return await _products.Find(_ => true).ToListAsync();
         }
+
+
+        //// Updates an existing product and automatically updates the inventory stock
+        //public async Task UpdateProductAsync(string id, Product updatedProduct)
+        //{
+        //    // Update the product in the products collection
+        //    await _products.ReplaceOneAsync(p => p.Id == id && p.VendorId == updatedProduct.VendorId, updatedProduct);
+
+        //    // Update the stock quantity in the inventory
+        //    var inventoryItem = await _inventoryRepository.GetInventoryByProductIdAsync(updatedProduct.UniqueProductId);
+        //    if (inventoryItem != null)
+        //    {
+        //        inventoryItem.StockQuantity = updatedProduct.StockQuantity; // Update stock quantity
+        //        await _inventoryRepository.UpdateInventoryAsync(inventoryItem); // Update inventory record
+        //    }
+        //}
+
+        //// Optionally: If you need to update only the stock quantity
+        //public async Task UpdateProductQuantityAsync(string productId, int newQuantity)
+        //{
+        //    // Retrieve the product by its UniqueProductId
+        //    var product = await GetProductById(productId);
+        //    if (product != null)
+        //    {
+        //        product.StockQuantity = newQuantity; // Update the product's stock quantity
+        //        await _products.ReplaceOneAsync(p => p.UniqueProductId == productId, product);
+
+        //        // Update the corresponding inventory item
+        //        var inventoryItem = await _inventoryRepository.GetInventoryByProductIdAsync(product.UniqueProductId);
+        //        if (inventoryItem != null)
+        //        {
+        //            inventoryItem.StockQuantity = newQuantity; // Sync the inventory stock
+        //            await _inventoryRepository.UpdateInventoryAsync(inventoryItem);
+        //        }
+        //    }
+        //}
     }
 }

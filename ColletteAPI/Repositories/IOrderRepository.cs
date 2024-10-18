@@ -22,5 +22,7 @@ namespace ColletteAPI.Repositories
         Task<bool> OrderExists(string orderId);
         Task<Order> GetOrderByVendorId(string orderId, string vendorId);
         Task<List<Order>> GetOrdersByVendorId(string vendorId);
+
+        Task<List<Order>> GetOrdersByProductId(string productId);
     }
 }
