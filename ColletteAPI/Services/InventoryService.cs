@@ -70,7 +70,7 @@ namespace ColletteAPI.Services
                     Id = inventory.Id,
                     ProductId = product?.UniqueProductId,
                     ProductName = product?.Name,
-                    StockQuantity = inventory.StockQuantity,  // Quantity from Inventory table
+                    StockQuantity = product.StockQuantity,  // Quantity from Inventory table
                     Category = product?.Category.ToString()  // Assuming Category is an enum or string
                 });
             }
