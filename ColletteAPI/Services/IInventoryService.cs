@@ -10,5 +10,8 @@ namespace ColletteAPI.Services
     {
         Task SyncProductsToInventoryAsync();  // Sync all products to the inventory
         Task<IEnumerable<InventoryDto>> GetAllProductsAsync();  // Get all products with product details
+
+        Task<bool> DeleteInventoryItemAsync(string productId); // Add delete method signature
+
     }
 }

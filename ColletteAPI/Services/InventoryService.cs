@@ -12,11 +12,15 @@ namespace ColletteAPI.Services
     {
         private readonly IInventoryRepository _inventoryRepository;
         private readonly IProductRepository _productRepository;  // Using ProductRepository
+        private readonly IOrderRepository _orderRepository; // Assuming you have an OrderRepository to handle orders
 
-        public InventoryService(IInventoryRepository inventoryRepository, IProductRepository productRepository)
+
+        public InventoryService(IInventoryRepository inventoryRepository, IProductRepository productRepository, IOrderRepository orderRepository)
         {
             _inventoryRepository = inventoryRepository;
             _productRepository = productRepository;
+            _orderRepository = orderRepository; // Injecting OrderRepository
+
         }
 
         // Syncs all products to inventories
@@ -72,6 +76,13 @@ namespace ColletteAPI.Services
             }
 
             return productDetails;
+        }
+
+        // Delete inventory item with order status check
+        public async Task<bool> DeleteInventoryItemAsync(string productId)
+        {
+            // Call the repository method to delete the item, with order status check
+            return await _inventoryRepository.DeleteInventoryItemAsync(productId);
         }
     }
 }

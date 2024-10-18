@@ -31,5 +31,21 @@ namespace ColletteAPI.Controllers
             var products = await _inventoryService.GetAllProductsAsync();
             return Ok(products);
         }
+
+        // DELETE: api/inventory/{productId}
+        [HttpDelete("{productId}")]
+        public async Task<IActionResult> DeleteInventoryItem(string productId)
+        {
+            // Attempt to delete the inventory item
+            var success = await _inventoryService.DeleteInventoryItemAsync(productId);
+
+            // If the deletion was blocked, return a 403 Forbidden response
+            if (!success)
+            {
+                return Forbid("Deletion not allowed for Delivered or Cancelled orders.");
+            }
+
+            return NoContent(); // Return 204 No Content if successful
+        }
     }
 }
